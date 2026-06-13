@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalDrop — Donor Registry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root { --transition: .3s ease; }
+[data-theme="dark"] {
+  --bg: #080000; --bg2: #110303; --card: rgba(18,3,3,0.92);
+  --border: rgba(255,60,60,0.12); --border2: rgba(255,60,60,0.22);
+  --text: #f0e8e8; --text2: #9a8080; --text3: #5a4040;
+  --input-bg: rgba(0,0,0,0.5); --input-border: rgba(255,255,255,0.08);
+  --nav-bg: rgba(6,0,0,0.92); --red: #ff3333; --red2: #c0392b;
+  --red-glow: rgba(255,50,50,0.18); --red-glow2: rgba(255,50,50,0.08);
+  --shadow: 0 24px 70px rgba(0,0,0,0.7); --grid-color: rgba(255,255,255,0.025);
+  --card-bg: rgba(14,2,2,0.85); --tag-bg: rgba(255,50,50,0.12);
+}
+[data-theme="light"] {
+  --bg: #fff5f5; --bg2: #fff0f0; --card: rgba(255,255,255,0.96);
+  --border: rgba(200,40,40,0.15); --border2: rgba(200,40,40,0.3);
+  --text: #1a0a0a; --text2: #7a4040; --text3: #bba0a0;
+  --input-bg: rgba(255,245,245,0.9); --input-border: rgba(200,40,40,0.2);
+  --nav-bg: rgba(255,248,248,0.95); --red: #c0392b; --red2: #a93226;
+  --red-glow: rgba(192,57,43,0.12); --red-glow2: rgba(192,57,43,0.06);
+  --shadow: 0 24px 70px rgba(180,30,30,0.12); --grid-color: rgba(180,30,30,0.04);
+  --card-bg: rgba(255,250,250,0.9); --tag-bg: rgba(192,57,43,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background var(--transition),color var(--transition);}
+
+/* BG */
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);background-size:44px 44px;}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(60px);animation:orbFloat 12s ease-in-out infinite;}
+.bg-orb1{width:500px;height:500px;top:-150px;left:-150px;background:radial-gradient(circle,rgba(180,0,0,0.14) 0%,transparent 70%);}
+.bg-orb2{width:400px;height:400px;bottom:-100px;right:-100px;background:radial-gradient(circle,rgba(180,0,0,0.1) 0%,transparent 70%);animation-delay:-6s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,20px);}}
+
+/* NAVBAR */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;background:var(--nav-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:0 40px;transition:background var(--transition),border-color var(--transition);}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:900;color:var(--red);letter-spacing:-.03em;text-decoration:none;}
+.logo i{filter:drop-shadow(0 0 8px var(--red));}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-link{color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:600;transition:color var(--transition);}
+.nav-link:hover{color:var(--text);}
+.theme-toggle{width:42px;height:24px;background:var(--input-bg);border:1px solid var(--border2);border-radius:24px;cursor:pointer;position:relative;transition:all var(--transition);flex-shrink:0;}
+.theme-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--red);transition:transform var(--transition);box-shadow:0 0 6px var(--red);}
+[data-theme="light"] .theme-toggle::after{transform:translateX(18px);}
+.theme-icon{position:absolute;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text2);pointer-events:none;}
+.theme-icon.moon{left:6px;}.theme-icon.sun{right:5px;}
+
+/* MAIN WRAP */
+.main-wrap{position:relative;z-index:1;padding:90px 24px 60px;max-width:1200px;margin:0 auto;}
+
+/* HERO */
+.hero{text-align:center;padding:36px 0 40px;}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:var(--red-glow);border:1px solid var(--border2);border-radius:30px;padding:5px 16px;font-size:.75rem;font-weight:700;color:var(--red);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
+.hero h1{font-size:2.6rem;font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-bottom:14px;}
+.hero h1 span{color:var(--red);}
+.hero p{font-size:1rem;color:var(--text2);max-width:520px;margin:0 auto 28px;line-height:1.7;}
+.hero-stats{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;}
+.hstat{text-align:center;}
+.hstat-val{font-size:1.8rem;font-weight:900;color:var(--red);}
+.hstat-lbl{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+
+/* TABS */
+.page-tabs{display:flex;gap:4px;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:5px;width:fit-content;margin:0 auto 36px;backdrop-filter:blur(10px);}
+.tab-btn{padding:9px 24px;border-radius:10px;border:none;background:transparent;color:var(--text2);font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);display:flex;align-items:center;gap:7px;}
+.tab-btn.active{background:var(--red);color:#fff;box-shadow:0 4px 18px rgba(200,0,0,0.3);}
+.tab-btn:not(.active):hover{color:var(--text);background:var(--red-glow);}
+
+/* SEARCH & FILTER */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:28px;backdrop-filter:blur(10px);}
+.filter-bar input, .filter-bar select{background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:.85rem;font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);}
+.filter-bar input{flex:1;min-width:200px;}
+.filter-bar input::placeholder{color:var(--text3);}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.filter-bar select option{background:var(--bg);}
+.clear-btn{padding:9px 16px;border-radius:10px;border:1px solid rgba(200,0,0,0.3);background:var(--red-glow2);color:var(--red);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);}
+.clear-btn:hover{background:var(--red-glow);}
+.add-btn{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,0,0,0.3);}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
+.profile-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s;backdrop-filter:blur(10px);}
+.profile-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(180,0,0,0.18);border-color:var(--border2);}
+.card-strip{height:4px;background:linear-gradient(90deg,var(--red),transparent);}
+.card-body{padding:18px 20px;}
+.card-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.avatar{width:50px;height:50px;border-radius:50%;border:2px solid var(--border2);object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;background:var(--red-glow);color:var(--red);}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.card-name{font-weight:800;font-size:1rem;color:var(--text);margin-bottom:3px;}
+.card-loc{font-size:.78rem;color:var(--text2);}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
+.tag{padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700;border:1px solid;}
+.tag-blood{background:var(--red-glow);border-color:var(--border2);color:var(--red);}
+.tag-donor{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:#22c55e;}
+.tag-receiver{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.25);color:#60a5fa;}
+.tag-avail{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:#4ade80;font-size:.68rem;}
+.tag-urgent{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#f87171;font-size:.68rem;}
+.card-info{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px;font-size:.8rem;color:var(--text2);margin-bottom:14px;}
+.card-info span{color:var(--text3);margin-right:3px;}
+.card-compat{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:.76rem;}
+[data-theme="light"] .card-compat{background:rgba(192,57,43,0.04);}
+.compat-title{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.compat-row{margin-bottom:4px;}
+.compat-row span{color:var(--text2);margin-right:4px;}
+.compat-pill{display:inline-block;background:var(--tag-bg);color:var(--red);border-radius:8px;padding:1px 7px;font-size:.68rem;font-weight:700;margin-right:2px;margin-bottom:2px;}
+.card-actions{display:flex;gap:8px;}
+.act-btn{flex:1;height:36px;border-radius:9px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:.8rem;font-weight:600;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:5px;}
+.act-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-glow2);}
+.act-btn.contact{background:var(--red);border-color:var(--red);color:#fff;}
+.act-btn.contact:hover{background:var(--red2);box-shadow:0 4px 14px rgba(200,0,0,0.3);}
+.act-del{width:36px;height:36px;border-radius:9px;border:1px solid rgba(239,68,68,0.2);background:rgba(239,68,68,0.08);color:#f87171;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.act-del:hover{background:rgba(239,68,68,0.18);border-color:#f87171;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:80px 20px;color:var(--text3);}
+.empty-icon{font-size:3rem;margin-bottom:16px;opacity:.4;}
+.empty-state h3{font-size:1.1rem;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.empty-state p{font-size:.85rem;}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px 20px;backdrop-filter:blur(4px);overflow-y:auto;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:620px;box-shadow:0 32px 80px rgba(0,0,0,0.6);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:22px 28px 0;}
+.modal-header h2{font-size:1.3rem;font-weight:900;letter-spacing:-.02em;}
+.modal-header p{font-size:.82rem;color:var(--text2);margin-top:4px;}
+.modal-close{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text2);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:22px 28px 28px;display:flex;flex-direction:column;gap:18px;}
+
+/* AVATAR UPLOAD */
+.avatar-upload-row{display:flex;align-items:center;gap:18px;}
+.avatar-preview{width:72px;height:72px;border-radius:50%;border:2px solid var(--border2);background:var(--red-glow);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--red);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0;transition:border-color var(--transition);}
+.avatar-preview:hover{border-color:var(--red);}
+.avatar-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-preview .cam-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity var(--transition);border-radius:50%;}
+.avatar-preview:hover .cam-overlay{opacity:1;}
+.upload-info{font-size:.8rem;color:var(--text2);line-height:1.6;}
+.upload-info strong{display:block;font-size:.9rem;color:var(--text);margin-bottom:2px;}
+.upload-lbl{font-size:.75rem;color:var(--red);cursor:pointer;font-weight:700;}
+.upload-lbl:hover{text-decoration:underline;}
+
+/* NID UPLOAD BOX */
+.nid-box{border:1.5px dashed var(--border2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all var(--transition);background:var(--input-bg);}
+.nid-box:hover,.nid-box.drag{border-color:var(--red);background:var(--red-glow2);}
+.nid-box i{font-size:1.8rem;color:var(--text3);margin-bottom:8px;display:block;}
+.nid-box p{font-size:.82rem;color:var(--text2);}
+.nid-box small{font-size:.72rem;color:var(--text3);}
+.nid-preview{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;}
+.nid-preview i{color:#22c55e;font-size:1.1rem;}
+.nid-preview span{font-size:.82rem;color:var(--text);flex:1;}
+.nid-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;transition:color var(--transition);}
+.nid-remove:hover{color:#f87171;}
+
+/* ROLE TOGGLE */
+.role-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.role-opt{padding:11px;border-radius:12px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text2);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;transition:all var(--transition);}
+.role-opt:hover{border-color:var(--border2);color:var(--text);}
+.role-opt.active-donor{border-color:#22c55e;background:rgba(34,197,94,0.1);color:#22c55e;}
+.role-opt.active-receiver{border-color:#60a5fa;background:rgba(59,130,246,0.1);color:#60a5fa;}
+
+/* AVAIL TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;}
+.toggle-label{font-size:.88rem;color:var(--text2);}
+.toggle-label strong{display:block;font-size:.92rem;color:var(--text);margin-bottom:1px;}
+.toggle-switch{position:relative;width:46px;height:26px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--input-border);border-radius:26px;cursor:pointer;transition:all var(--transition);}
+.toggle-slider::before{content:'';position:absolute;width:20px;height:20px;top:3px;left:3px;background:#fff;border-radius:50%;transition:all var(--transition);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.toggle-switch input:checked + .toggle-slider{background:var(--red);}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+/* FORM GRID */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid .full{grid-column:1/-1;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg label{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.fg input,.fg select,.fg textarea{background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.88rem;font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);width:100%;}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3);}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.fg select option{background:var(--bg);}
+.fg textarea{resize:vertical;min-height:70px;}
+.input-icon-wrap{position:relative;}
+.input-icon-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.88rem;pointer-events:none;}
+.input-icon-wrap input{padding-left:38px;}
+
+/* SUBMIT */
+.submit-btn{width:100%;height:52px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;font-size:.92rem;font-weight:800;letter-spacing:.06em;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;transition:all var(--transition);}
+.submit-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 32px rgba(200,0,0,0.32);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;}
+
+/* PROFILE IMAGE DISPLAY */
+.card-nid-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700;color:#22c55e;margin-top:5px;}
+
+/* TOAST */
+#toastBox{position:fixed;top:74px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:.84rem;font-weight:600;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,0.4);animation:toastIn .3s ease;min-width:240px;backdrop-filter:blur(10px);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success i{color:#4ade80;}.toast.error i{color:#f87171;}.toast.info i{color:#60a5fa;}
+
+/* RESULTS COUNT */
+.results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-size:.82rem;color:var(--text2);}
+.results-count{font-weight:700;}
+
+/* BLOOD COMPAT MAP */
+.compat-map { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px; }
+.compat-cell { padding:8px 6px; border-radius:8px; border:1px solid var(--border); text-align:center; font-size:.7rem; background:var(--input-bg); }
+.compat-cell .btype { font-size:.85rem; font-weight:900; color:var(--red); display:block; margin-bottom:3px; }
+.compat-cell .binfo { color:var(--text3); font-size:.65rem; }
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .navbar{padding:0 16px;}
+  .hero h1{font-size:1.8rem;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-grid .full{grid-column:1;}
+  .cards-grid{grid-template-columns:1fr;}
+  .hero-stats{gap:24px;}
+  .filter-bar{flex-direction:column;align-items:stretch;}
+  .filter-bar input,.filter-bar select{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb bg-orb1"></div>
+  <div class="bg-orb bg-orb2"></div>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <i class="fa-solid fa-droplet"></i>VitalDrop
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="login.html" class="nav-link">Sign In</a>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark">
+      <i class="fa-solid fa-moon theme-icon moon"></i>
+      <i class="fa-solid fa-sun theme-icon sun"></i>
+    </div>
+  </div>
+</nav>
+
+<div id="toastBox"></div>
+
+<div class="main-wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge"><i class="fa-solid fa-circle" style="font-size:.5rem;color:#22c55e;"></i> Bangladesh Blood Network — Live Registry</div>
+    <h1>Donor &amp; Receiver <span>Registry</span></h1>
+    <p>Connect blood donors with those who need them most. Every profile could save a life — register today.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-val" id="statTotal">0</div><div class="hstat-lbl">Profiles</div></div>
+      <div class="hstat"><div class="hstat-val" id="statDonors">0</div><div class="hstat-lbl">Donors</div></div>
+      <div class="hstat"><div class="hstat-val" id="statReceivers">0</div><div class="hstat-lbl">Receivers</div></div>
+      <div class="hstat"><div class="hstat-val" id="statAvail">0</div><div class="hstat-lbl">Available Now</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="page-tabs">
+    <button class="tab-btn active" id="tab-all" onclick="switchTab('all')"><i class="fa-solid fa-users"></i> All</button>
+    <button class="tab-btn" id="tab-donor" onclick="switchTab('donor')"><i class="fa-solid fa-droplet"></i> Donors</button>
+    <button class="tab-btn" id="tab-receiver" onclick="switchTab('receiver')"><i class="fa-solid fa-hospital"></i> Receivers</button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍  Search name, phone, district…" oninput="renderCards()">
+    <select id="filterBG" onchange="renderCards()">
+      <option value="">All Blood Groups</option>
+      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+    </select>
+    <select id="filterDiv" onchange="renderCards()">
+      <option value="">All Divisions</option>
+      <option>Dhaka</option><option>Chittagong</option><option>Rajshahi</option>
+      <option>Khulna</option><option>Barisal</option><option>Sylhet</option>
+      <option>Rangpur</option><option>Mymensingh</option>
+    </select>
+    <button class="clear-btn" onclick="clearFilters()"><i class="fa-solid fa-xmark"></i> Clear</button>
+    <button class="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Profile</button>
+  </div>
+
+  <div class="results-bar">
+    <span class="results-count" id="resultsCount">0 profiles</span>
+    <span style="font-size:.78rem;color:var(--text3);">Demo mode — no backend required</span>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="empty-state hidden" id="emptyState">
+    <div class="empty-icon"><i class="fa-solid fa-droplet"></i></div>
+    <h3>No profiles found</h3>
+    <p>Try adjusting your filters or add a new donor/receiver profile.</p>
+  </div>
+
+</div><!-- /main-wrap -->
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="overlayClick(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">New Profile</h2>
+        <p>Blood donor &amp; receiver registration</p>
+      </div>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- AVATAR UPLOAD -->
+      <div class="avatar-upload-row">
+        <div class="avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarFile').click()">
+          <i class="fa-solid fa-user" id="avatarIcon"></i>
+          <img id="avatarImg" src="" style="display:none;" alt="Avatar">
+          <div class="cam-overlay"><i class="fa-solid fa-camera" style="color:#fff;font-size:1rem;"></i></div>
+        </div>
+        <input type="file" id="avatarFile" accept="image/*" style="display:none;" onchange="handleAvatar(event)">
+        <div class="upload-info">
+          <strong>Profile Photo</strong>
+          Click avatar to upload a photo<br>
+          <label class="upload-lbl" for="avatarFile">Browse image</label>
+          &nbsp;·&nbsp;
+          <span class="upload-lbl" onclick="removeAvatar()" style="color:var(--text3);">Remove</span>
+          <div style="font-size:.72rem;color:var(--text3);margin-top:3px;">JPG, PNG · Max 5MB</div>
+        </div>
+      </div>
+
+      <!-- ROLE -->
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Role *</div>
+        <div class="role-toggle">
+          <button type="button" class="role-opt active-donor" id="roleD" onclick="selectRole('donor')"><i class="fa-solid fa-droplet"></i> Blood Donor</button>
+          <button type="button" class="role-opt" id="roleR" onclick="selectRole('receiver')"><i class="fa-solid fa-hospital"></i> Blood Receiver</button>
+        </div>
+      </div>
+      <input type="hidden" id="fRole" value="donor">
+
+      <!-- FORM GRID -->
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Full Name *</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="fName" placeholder="e.g. Md. Mejbaul Islam">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Email</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="fEmail" placeholder="email@example.com">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Phone *</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-phone"></i>
+            <input type="tel" id="fPhone" placeholder="017XXXXXXXX">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Blood Group *</label>
+          <select id="fBG">
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Age</label>
+          <input type="number" id="fAge" min="18" max="70" placeholder="25">
+        </div>
+        <div class="fg">
+          <label>Division</label>
+          <select id="fDiv">
+            <option>Dhaka</option><option>Chittagong</option><option>Rajshahi</option>
+            <option>Khulna</option><option>Barisal</option><option>Sylhet</option>
+            <option>Rangpur</option><option>Mymensingh</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>District</label>
+          <input type="text" id="fDistrict" placeholder="e.g. Mirpur, Dhaka">
+        </div>
+        <div class="fg full" id="lastDonRow">
+          <label>Last Donation Date</label>
+          <input type="date" id="fLastDon">
+        </div>
+        <div class="fg full">
+          <label>Medical Notes</label>
+          <textarea id="fNotes" placeholder="Any conditions, restrictions, or urgent needs…"></textarea>
+        </div>
+      </div>
+
+      <!-- NID UPLOAD -->
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">National ID (NID) * <span style="color:var(--red);font-size:.65rem;">Required for verification</span></div>
+        <div class="nid-box" id="nidBox" onclick="document.getElementById('nidFile').click()" ondragover="nidDrag(event,true)" ondragleave="nidDrag(event,false)" ondrop="nidDrop(event)">
+          <i class="fa-solid fa-id-card"></i>
+          <p>Click or drag &amp; drop your NID card image</p>
+          <small>Front side of Bangladesh NID · JPG, PNG, PDF · Max 5MB</small>
+        </div>
+        <div class="nid-preview hidden" id="nidPreview">
+          <i class="fa-solid fa-circle-check"></i>
+          <span id="nidFileName">nid_front.jpg</span>
+          <button class="nid-remove" onclick="removeNid()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <input type="file" id="nidFile" accept="image/*,application/pdf" style="display:none;" onchange="handleNid(event)">
+      </div>
+
+      <!-- AVAILABLE TOGGLE -->
+      <div class="toggle-row">
+        <div class="toggle-label">
+          <strong id="toggleLabel">Available to donate</strong>
+          <span id="toggleSub">Toggle if you are currently available</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="fAvail" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- SUBMIT -->
+      <button class="submit-btn" id="submitBtn" onclick="saveProfile()">
+        <i class="fa-solid fa-droplet"></i> <span id="submitText">Save Profile</span>
+      </button>
+
+    </div>
+  </div>
+</div><!-- /modal -->
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+  const h=document.documentElement;
+  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+  localStorage.setItem('vd-theme',h.getAttribute('data-theme'));
+}
+(function(){const s=localStorage.getItem('vd-theme');if(s)document.documentElement.setAttribute('data-theme',s);})();
+
+/* ── COMPAT MAP ── */
+const COMPAT={
+  'A+':  {to:['A+','AB+'],         from:['A+','A-','O+','O-']},
+  'A-':  {to:['A+','A-','AB+','AB-'],  from:['A-','O-']},
+  'B+':  {to:['B+','AB+'],         from:['B+','B-','O+','O-']},
+  'B-':  {to:['B+','B-','AB+','AB-'],  from:['B-','O-']},
+  'AB+': {to:['AB+'],              from:['A+','A-','B+','B-','AB+','AB-','O+','O-']},
+  'AB-': {to:['AB+','AB-'],        from:['A-','B-','AB-','O-']},
+  'O+':  {to:['A+','B+','O+','AB+'],   from:['O+','O-']},
+  'O-':  {to:['A+','A-','B+','B-','AB+','AB-','O+','O-'],from:['O-']},
+};
+
+/* ── DEMO DATA ── */
+let profiles=[
+  {id:1,fullName:'Md. Mejbaul Islam Zidan',email:'mejbaul@example.com',phone:'01712345678',age:26,bloodGroup:'O+',role:'donor',division:'Dhaka',district:'Mirpur',available:true,lastDonation:'2024-11-15',notes:'',avatar:'',hasNid:true},
+  {id:2,fullName:'Fatema Akter Mim',email:'fatema@example.com',phone:'01887654321',age:24,bloodGroup:'A+',role:'donor',division:'Chittagong',district:'Hathazari',available:true,lastDonation:'2024-10-20',notes:'',avatar:'',hasNid:true},
+  {id:3,fullName:'Rahim Uddin Ahmed',email:'rahim@example.com',phone:'01655555555',age:35,bloodGroup:'B-',role:'receiver',division:'Dhaka',district:'Uttara',available:true,lastDonation:'',notes:'Needs O- or B- urgently',avatar:'',hasNid:true},
+  {id:4,fullName:'Nasrin Sultana',email:'nasrin@example.com',phone:'01911111111',age:28,bloodGroup:'AB+',role:'donor',division:'Sylhet',district:'Sylhet Sadar',available:false,lastDonation:'2025-01-08',notes:'',avatar:'',hasNid:false},
+  {id:5,fullName:'Karim Hassan',email:'karim@example.com',phone:'01922222222',age:42,bloodGroup:'O-',role:'donor',division:'Rajshahi',district:'Rajshahi Sadar',available:true,lastDonation:'2025-02-14',notes:'Universal donor',avatar:'',hasNid:true},
+  {id:6,fullName:'Shirin Akter',email:'shirin@example.com',phone:'01533333333',age:31,bloodGroup:'A-',role:'receiver',division:'Khulna',district:'Khulna Sadar',available:true,lastDonation:'',notes:'Post-surgery transfusion needed',avatar:'',hasNid:true},
+];
+let nextId=7;
+let currentTab='all';
+let editId=null;
+let avatarData='',nidFile=null;
+
+/* ── INITIALS ── */
+const initials=n=>n?n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'?';
+
+/* ── STATS ── */
+function updateStats(){
+  document.getElementById('statTotal').textContent=profiles.length;
+  document.getElementById('statDonors').textContent=profiles.filter(p=>p.role==='donor').length;
+  document.getElementById('statReceivers').textContent=profiles.filter(p=>p.role==='receiver').length;
+  document.getElementById('statAvail').textContent=profiles.filter(p=>p.available).length;
+}
+
+/* ── RENDER ── */
+function renderCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const bg=document.getElementById('filterBG').value;
+  const div=document.getElementById('filterDiv').value;
+  const filtered=profiles.filter(p=>{
+    if(currentTab!=='all'&&p.role!==currentTab) return false;
+    if(bg&&p.bloodGroup!==bg) return false;
+    if(div&&p.division!==div) return false;
+    if(q&&!(p.fullName.toLowerCase().includes(q)||p.phone.includes(q)||(p.district||'').toLowerCase().includes(q)||(p.bloodGroup||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const grid=document.getElementById('cardsGrid');
+  const empty=document.getElementById('emptyState');
+  document.getElementById('resultsCount').textContent=`${filtered.length} profile${filtered.length!==1?'s':''}`;
+  if(!filtered.length){grid.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  const c=COMPAT;
+  grid.innerHTML=filtered.map(p=>{
+    const cp=c[p.bloodGroup]||{to:[],from:[]};
+    const avTag=p.role==='donor'
+      ?(p.available?'<span class="tag tag-avail">✓ Available</span>':'')
+      :(p.available?'<span class="tag tag-urgent">⚡ Urgent</span>':'');
+    const av=p.avatar
+      ?`<div class="avatar"><img src="${p.avatar}" alt="${p.fullName}"></div>`
+      :`<div class="avatar">${initials(p.fullName)}</div>`;
+    const nidBadge=p.hasNid?`<span class="card-nid-badge"><i class="fa-solid fa-id-card" style="font-size:.65rem;"></i> NID Verified</span>`:'';
+    return `<div class="profile-card">
+      <div class="card-strip"></div>
+      <div class="card-body">
+        <div class="card-top">
+          ${av}
+          <div style="flex:1;min-width:0;">
+            <div class="card-name">${p.fullName}</div>
+            <div class="card-loc">${p.division}${p.district?` · ${p.district}`:''}</div>
+            <div class="card-tags">
+              <span class="tag tag-blood">${p.bloodGroup}</span>
+              <span class="tag ${p.role==='donor'?'tag-donor':'tag-receiver'}">${p.role==='donor'?'🩸 Donor':'🏥 Receiver'}</span>
+              ${avTag}
+            </div>
+            ${nidBadge}
+          </div>
+        </div>
+        <div class="card-info">
+          <div><span>📞</span>${p.phone||'—'}</div>
+          <div><span>🎂</span>${p.age?p.age+' yrs':'—'}</div>
+          <div style="grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span>✉️</span>${p.email||'—'}</div>
+          ${p.lastDonation?`<div style="grid-column:1/-1;"><span>🗓 Last: </span>${p.lastDonation}</div>`:''}
+          ${p.notes?`<div style="grid-column:1/-1;font-style:italic;opacity:.7;">"${p.notes.slice(0,60)}${p.notes.length>60?'…':''}"</div>`:''}
+        </div>
+        <div class="card-compat">
+          <div class="compat-title">Blood Compatibility</div>
+          <div class="compat-row"><span>Donates to:</span>${cp.to.map(b=>`<span class="compat-pill">${b}</span>`).join('')}</div>
+          <div class="compat-row"><span>Receives from:</span>${cp.from.map(b=>`<span class="compat-pill">${b}</span>`).join('')}</div>
+        </div>
+        <div class="card-actions">
+          <button class="act-btn" onclick="editProfile(${p.id})"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+          <a href="tel:${p.phone}" class="act-btn contact"><i class="fa-solid fa-phone"></i> Call</a>
+          <button class="act-del" onclick="deleteProfile(${p.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+/* ── TABS ── */
+function switchTab(t){
+  currentTab=t;
+  ['all','donor','receiver'].forEach(id=>{
+    const b=document.getElementById('tab-'+id);
+    b.classList.toggle('active',id===t);
+  });
+  renderCards();
+}
+
+/* ── FILTERS ── */
+function clearFilters(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('filterBG').value='';
+  document.getElementById('filterDiv').value='';
+  renderCards();
+}
+
+/* ── MODAL ── */
+function openModal(p=null){
+  editId=p?p.id:null;
+  avatarData=p?p.avatar:'';
+  nidFile=null;
+  document.getElementById('modalTitle').textContent=p?'Edit Profile':'New Profile';
+  document.getElementById('submitText').textContent=p?'Update Profile':'Save Profile';
+  document.getElementById('fName').value=p?p.fullName:'';
+  document.getElementById('fEmail').value=p?p.email:'';
+  document.getElementById('fPhone').value=p?p.phone:'';
+  document.getElementById('fBG').value=p?p.bloodGroup:'A+';
+  document.getElementById('fAge').value=p?p.age:'';
+  document.getElementById('fDiv').value=p?p.division:'Dhaka';
+  document.getElementById('fDistrict').value=p?p.district:'';
+  document.getElementById('fLastDon').value=p?p.lastDonation:'';
+  document.getElementById('fNotes').value=p?p.notes:'';
+  document.getElementById('fAvail').checked=p?p.available:true;
+  selectRole(p?p.role:'donor');
+  updateAvatarUI();
+  document.getElementById('nidPreview').classList.add('hidden');
+  document.getElementById('nidBox').classList.remove('hidden');
+  if(p&&p.hasNid){
+    document.getElementById('nidBox').classList.add('hidden');
+    document.getElementById('nidPreview').classList.remove('hidden');
+    document.getElementById('nidFileName').textContent='NID already uploaded ✓';
+    nidFile='existing';
+  }
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.add('hidden');
+  document.body.style.overflow='';
+}
+function overlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
+/* ── ROLE ── */
+function selectRole(r){
+  document.getElementById('fRole').value=r;
+  document.getElementById('roleD').className='role-opt'+(r==='donor'?' active-donor':'');
+  document.getElementById('roleR').className='role-opt'+(r==='receiver'?' active-receiver':'');
+  document.getElementById('lastDonRow').style.display=r==='donor'?'':'none';
+  document.getElementById('toggleLabel').textContent=r==='donor'?'Available to donate':'Urgently needs blood';
+  document.getElementById('toggleSub').textContent=r==='donor'?'Toggle if you can donate now':'Toggle if you need blood urgently';
+}
+
+/* ── AVATAR ── */
+function handleAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  if(f.size>5*1024*1024){toast('Image too large (max 5MB)','error');return;}
+  const r=new FileReader();
+  r.onload=ev=>{avatarData=ev.target.result;updateAvatarUI();};
+  r.readAsDataURL(f);
+}
+function updateAvatarUI(){
+  const img=document.getElementById('avatarImg');
+  const icon=document.getElementById('avatarIcon');
+  if(avatarData){img.src=avatarData;img.style.display='block';icon.style.display='none';}
+  else{img.style.display='none';img.src='';icon.style.display='';}
+}
+function removeAvatar(){avatarData='';updateAvatarUI();}
+
+/* ── NID ── */
+function handleNid(e){const f=e.target.files[0];if(!f)return;setNid(f);}
+function nidDrag(e,on){e.preventDefault();document.getElementById('nidBox').classList.toggle('drag',on);}
+function nidDrop(e){e.preventDefault();nidDrag(e,false);const f=e.dataTransfer.files[0];if(f)setNid(f);}
+function setNid(f){
+  if(f.size>5*1024*1024){toast('NID file too large (max 5MB)','error');return;}
+  nidFile=f;
+  document.getElementById('nidBox').classList.add('hidden');
+  document.getElementById('nidPreview').classList.remove('hidden');
+  document.getElementById('nidFileName').textContent=f.name;
+}
+function removeNid(){
+  nidFile=null;
+  document.getElementById('nidFile').value='';
+  document.getElementById('nidPreview').classList.add('hidden');
+  document.getElementById('nidBox').classList.remove('hidden');
+}
+
+/* ── SAVE ── */
+function saveProfile(){
+  const name=document.getElementById('fName').value.trim();
+  const phone=document.getElementById('fPhone').value.trim();
+  const bg=document.getElementById('fBG').value;
+  if(!name||!phone){toast('Name and phone are required','error');return;}
+  if(!nidFile){toast('Please upload your NID card for verification','error');return;}
+  const doc={
+    id: editId||nextId++,
+    fullName:name,email:document.getElementById('fEmail').value.trim(),
+    phone,age:parseInt(document.getElementById('fAge').value)||'',
+    bloodGroup:bg,role:document.getElementById('fRole').value,
+    division:document.getElementById('fDiv').value,district:document.getElementById('fDistrict').value.trim(),
+    available:document.getElementById('fAvail').checked,
+    lastDonation:document.getElementById('fLastDon').value,
+    notes:document.getElementById('fNotes').value.trim(),
+    avatar:avatarData,hasNid:true,
+  };
+  if(editId){
+    profiles=profiles.map(p=>p.id===editId?doc:p);
+    toast('Profile updated successfully!','success');
+  } else {
+    profiles.unshift(doc);
+    toast('Profile saved! Welcome to VitalDrop 🩸','success');
+  }
+  closeModal();renderCards();
+}
+
+/* ── EDIT / DELETE ── */
+function editProfile(id){const p=profiles.find(x=>x.id===id);if(p)openModal(p);}
+function deleteProfile(id){
+  const p=profiles.find(x=>x.id===id);
+  if(!p)return;
+  if(!confirm(`Remove ${p.fullName} from registry?`))return;
+  profiles=profiles.filter(x=>x.id!==id);
+  renderCards();toast('Profile removed','info');
+}
+
+/* ── TOAST ── */
+function toast(msg,type='success'){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<i class="fa-solid ${icons[type]}"></i>${msg}`;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='.4s';},2800);
+  setTimeout(()=>el.remove(),3300);
+}
+
+/* ── INIT ── */
+renderCards();
+</script>
+</body>
+</html>

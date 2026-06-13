@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalDrop — Messages & Support</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--transition:.3s ease;}
+[data-theme="dark"]{
+  --bg:#080000;--bg2:#110303;--bg3:#0d0101;
+  --card:rgba(16,2,2,0.9);--card2:rgba(22,4,4,0.7);--card3:rgba(28,5,5,0.55);
+  --border:rgba(255,60,60,0.11);--border2:rgba(255,60,60,0.23);--border3:rgba(255,60,60,0.38);
+  --text:#f0e8e8;--text2:#9a8080;--text3:#5a4040;
+  --input-bg:rgba(0,0,0,0.48);--input-border:rgba(255,255,255,0.08);
+  --nav-bg:rgba(6,0,0,0.95);
+  --red:#ff3333;--red2:#c0392b;
+  --red-glow:rgba(255,50,50,0.17);--red-glow2:rgba(255,50,50,0.07);
+  --green:#22c55e;--green-glow:rgba(34,197,94,0.13);
+  --blue:#60a5fa;--blue-glow:rgba(96,165,250,0.13);
+  --amber:#f59e0b;--amber-glow:rgba(245,158,11,0.13);
+  --purple:#a78bfa;--purple-glow:rgba(167,139,250,0.13);
+  --grid-color:rgba(255,255,255,0.025);
+  --sidebar-bg:rgba(4,0,0,0.97);
+  --msg-out:rgba(160,0,0,0.22);--msg-in:rgba(255,255,255,0.05);
+  --scrollbar:#3a1010;
+}
+[data-theme="light"]{
+  --bg:#fff5f5;--bg2:#fff0f0;--bg3:#fff8f8;
+  --card:rgba(255,255,255,0.97);--card2:rgba(255,248,248,0.88);--card3:rgba(255,244,244,0.7);
+  --border:rgba(200,40,40,0.13);--border2:rgba(200,40,40,0.26);--border3:rgba(200,40,40,0.42);
+  --text:#1a0a0a;--text2:#7a4040;--text3:#bba0a0;
+  --input-bg:rgba(255,245,245,0.92);--input-border:rgba(200,40,40,0.18);
+  --nav-bg:rgba(255,248,248,0.97);
+  --red:#c0392b;--red2:#a93226;
+  --red-glow:rgba(192,57,43,0.11);--red-glow2:rgba(192,57,43,0.05);
+  --green:#16a34a;--green-glow:rgba(22,163,74,0.09);
+  --blue:#2563eb;--blue-glow:rgba(37,99,235,0.09);
+  --amber:#d97706;--amber-glow:rgba(217,119,6,0.09);
+  --purple:#7c3aed;--purple-glow:rgba(124,58,237,0.09);
+  --grid-color:rgba(180,30,30,0.04);
+  --sidebar-bg:rgba(255,246,246,0.99);
+  --msg-out:rgba(192,57,43,0.1);--msg-in:rgba(0,0,0,0.04);
+  --scrollbar:#f0d0d0;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background var(--transition),color var(--transition);}
+
+/* BG */
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);background-size:44px 44px;}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;}
+.orb1{width:600px;height:600px;top:-200px;left:-150px;background:radial-gradient(circle,rgba(180,0,0,0.13) 0%,transparent 70%);animation:drift 15s ease-in-out infinite;}
+.orb2{width:500px;height:500px;bottom:-120px;right:-100px;background:radial-gradient(circle,rgba(180,0,0,0.09) 0%,transparent 70%);animation:drift 15s ease-in-out infinite;animation-delay:-7s;}
+@keyframes drift{0%,100%{transform:translate(0,0);}50%{transform:translate(35px,25px);}}
+
+/* NAVBAR */
+.navbar{position:fixed;top:0;left:0;right:0;height:62px;background:var(--nav-bg);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:200;transition:background var(--transition);}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.42rem;font-weight:900;color:var(--red);text-decoration:none;letter-spacing:-.02em;}
+.logo i{filter:drop-shadow(0 0 8px var(--red));}
+.nav-r{display:flex;align-items:center;gap:14px;}
+.nav-link{color:var(--text2);text-decoration:none;font-size:.86rem;font-weight:600;transition:color var(--transition);}
+.nav-link:hover{color:var(--text);}
+.theme-toggle{width:42px;height:24px;background:var(--input-bg);border:1px solid var(--border2);border-radius:24px;cursor:pointer;position:relative;transition:all var(--transition);flex-shrink:0;}
+.theme-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--red);transition:transform var(--transition);box-shadow:0 0 6px var(--red);}
+[data-theme="light"] .theme-toggle::after{transform:translateX(18px);}
+.tgi{position:absolute;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text2);pointer-events:none;}
+.tgi.moon{left:6px;}.tgi.sun{right:5px;}
+.user-pill{display:flex;align-items:center;gap:8px;background:var(--red-glow2);border:1px solid var(--border);border-radius:30px;padding:4px 14px 4px 6px;}
+.user-av{width:28px;height:28px;border-radius:50%;background:var(--red-glow);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--red);}
+.user-name{font-size:.8rem;font-weight:700;color:var(--text);}
+
+/* LAYOUT */
+.layout{position:relative;z-index:1;display:grid;grid-template-columns:300px 1fr;min-height:100vh;padding-top:62px;}
+
+/* ── LEFT PANEL ── */
+.left-panel{background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;height:calc(100vh - 62px);position:sticky;top:62px;overflow:hidden;transition:background var(--transition);}
+
+/* Panel header */
+.panel-head{padding:18px 20px 14px;border-bottom:1px solid var(--border);}
+.panel-head h2{font-size:1.05rem;font-weight:900;margin-bottom:4px;}
+.panel-head p{font-size:.75rem;color:var(--text2);}
+
+/* NEW TICKET BTN */
+.new-ticket-btn{margin:14px 16px 10px;height:42px;background:linear-gradient(135deg,var(--red2),var(--red));border:none;border-radius:11px;color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all var(--transition);letter-spacing:.04em;}
+.new-ticket-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,0,0,0.3);}
+
+/* SEARCH */
+.panel-search{padding:0 16px 10px;}
+.psearch{width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:9px;padding:9px 12px 9px 34px;color:var(--text);font-size:.82rem;font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);position:relative;}
+.psearch::placeholder{color:var(--text3);}
+.psearch:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.psearch-wrap{position:relative;}
+.psearch-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem;pointer-events:none;}
+
+/* FILTER TABS */
+.ftabs{display:flex;gap:4px;padding:0 16px 12px;}
+.ftab{flex:1;padding:6px 0;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);text-align:center;}
+.ftab.active{background:var(--red-glow);border-color:var(--border2);color:var(--red);}
+.ftab:hover:not(.active){color:var(--text2);}
+
+/* TICKET LIST */
+.ticket-list{flex:1;overflow-y:auto;padding:0 10px 10px;}
+.ticket-list::-webkit-scrollbar{width:4px;}
+.ticket-list::-webkit-scrollbar-track{background:transparent;}
+.ticket-list::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px;}
+.ticket-item{padding:13px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card2);margin-bottom:8px;cursor:pointer;transition:all var(--transition);position:relative;}
+.ticket-item:hover{border-color:var(--border2);background:var(--card);}
+.ticket-item.active{border-color:var(--red);background:var(--red-glow2);border-left:3px solid var(--red);}
+.ti-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ti-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+.ti-subject{font-size:.84rem;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ti-preview{font-size:.75rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:6px;}
+.ti-meta{display:flex;align-items:center;justify-content:space-between;}
+.ti-time{font-size:.68rem;color:var(--text3);}
+.ti-unread{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.ti-status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700;border:1px solid;}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;height:calc(100vh - 62px);position:sticky;top:62px;}
+
+/* CHAT HEADER */
+.chat-head{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--card2);display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.chat-av{width:40px;height:40px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;flex-shrink:0;}
+.chat-info{flex:1;min-width:0;}
+.chat-title{font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:2px;}
+.chat-sub{font-size:.74rem;color:var(--text2);}
+.chat-actions{display:flex;gap:8px;}
+.ca-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:.85rem;transition:all var(--transition);}
+.ca-btn:hover{border-color:var(--border2);color:var(--red);}
+
+/* CHAT MESSAGES */
+.chat-msgs{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;}
+.chat-msgs::-webkit-scrollbar{width:4px;}
+.chat-msgs::-webkit-scrollbar-track{background:transparent;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px;}
+
+/* date divider */
+.date-div{text-align:center;font-size:.68rem;color:var(--text3);font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:4px 0;}
+.date-div::before,.date-div::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* messages */
+.msg-row{display:flex;gap:10px;animation:msgIn .25s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg-row.out{flex-direction:row-reverse;}
+.msg-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;border:1.5px solid var(--border2);}
+.msg-bubble{max-width:68%;padding:11px 14px;border-radius:14px;font-size:.84rem;line-height:1.65;position:relative;}
+.msg-row.in .msg-bubble{background:var(--msg-in);border:1px solid var(--border);border-radius:4px 14px 14px 14px;}
+.msg-row.out .msg-bubble{background:var(--msg-out);border:1px solid var(--border2);border-radius:14px 4px 14px 14px;color:var(--text);}
+.msg-name{font-size:.68rem;font-weight:700;color:var(--text3);margin-bottom:4px;}
+.msg-time{font-size:.65rem;color:var(--text3);margin-top:5px;text-align:right;}
+.msg-row.in .msg-time{text-align:left;}
+
+/* status messages */
+.msg-status{text-align:center;font-size:.74rem;color:var(--text3);padding:4px 14px;background:var(--red-glow2);border:1px solid var(--border);border-radius:20px;margin:4px auto;max-width:fit-content;}
+
+/* COMPLAINT TAG */
+.complaint-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;margin-bottom:6px;}
+.complaint-tag.complaint{background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.25);color:#f87171;}
+.complaint-tag.question{background:var(--blue-glow);border:1px solid rgba(96,165,250,0.25);color:var(--blue);}
+.complaint-tag.report{background:var(--amber-glow);border:1px solid rgba(245,158,11,0.25);color:var(--amber);}
+.complaint-tag.general{background:var(--green-glow);border:1px solid rgba(34,197,94,0.25);color:var(--green);}
+
+/* CHAT INPUT */
+.chat-input-area{border-top:1px solid var(--border);background:var(--card2);padding:14px 20px;flex-shrink:0;}
+.input-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.tool-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text2);font-size:.74rem;font-weight:600;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);display:flex;align-items:center;gap:5px;}
+.tool-btn:hover,.tool-btn.active{border-color:var(--border2);color:var(--red);background:var(--red-glow2);}
+.input-row{display:flex;gap:10px;align-items:flex-end;}
+.msg-input{flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:.88rem;font-family:'Segoe UI',sans-serif;outline:none;resize:none;min-height:46px;max-height:120px;transition:all var(--transition);line-height:1.5;}
+.msg-input::placeholder{color:var(--text3);}
+.msg-input:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.send-btn{width:46px;height:46px;background:linear-gradient(135deg,var(--red2),var(--red));border:none;border-radius:12px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all var(--transition);flex-shrink:0;}
+.send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(200,0,0,0.3);}
+.char-count{font-size:.68rem;color:var(--text3);text-align:right;margin-top:6px;}
+
+/* ── NEW TICKET MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(5px);}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 28px 70px rgba(0,0,0,0.5);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:22px 26px 0;}
+.modal-head h3{font-size:1.1rem;font-weight:900;}
+.modal-head p{font-size:.78rem;color:var(--text2);margin-top:3px;}
+.mc{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem;transition:all var(--transition);flex-shrink:0;}
+.mc:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:20px 26px 26px;display:flex;flex-direction:column;gap:16px;}
+
+/* TYPE SELECTOR */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.type-opt{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all var(--transition);display:flex;align-items:center;gap:10px;}
+.type-opt:hover{border-color:var(--border2);}
+.type-opt.sel-complaint{border-color:#f87171;background:rgba(239,68,68,0.1);}
+.type-opt.sel-question{border-color:var(--blue);background:var(--blue-glow);}
+.type-opt.sel-report{border-color:var(--amber);background:var(--amber-glow);}
+.type-opt.sel-general{border-color:var(--green);background:var(--green-glow);}
+.type-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.type-name{font-size:.84rem;font-weight:700;color:var(--text);}
+.type-desc{font-size:.7rem;color:var(--text2);}
+
+/* DONOR/RECEIVER TAG */
+.tag-person{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:11px;background:var(--input-bg);border:1px solid var(--input-border);}
+.tp-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;background:var(--red-glow);color:var(--red);border:1px solid var(--border2);flex-shrink:0;}
+.tp-name{font-size:.85rem;font-weight:700;color:var(--text);}
+.tp-role{font-size:.72rem;color:var(--text2);}
+.remove-tag{margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;transition:color var(--transition);}
+.remove-tag:hover{color:var(--red);}
+
+/* FORM FIELDS */
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg label{font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.fg input,.fg select,.fg textarea{background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.86rem;font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);width:100%;}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3);}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.fg select option{background:var(--bg);}
+.fg textarea{resize:vertical;min-height:90px;}
+.priority-row{display:flex;gap:8px;}
+.prio-opt{flex:1;padding:9px;border-radius:9px;border:1px solid var(--border);background:var(--input-bg);color:var(--text2);font-size:.76rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);text-align:center;}
+.prio-opt:hover{border-color:var(--border2);}
+.prio-opt.p-low.sel{border-color:var(--green);background:var(--green-glow);color:var(--green);}
+.prio-opt.p-med.sel{border-color:var(--amber);background:var(--amber-glow);color:var(--amber);}
+.prio-opt.p-high.sel{border-color:var(--red);background:var(--red-glow);color:var(--red);}
+.submit-btn{width:100%;height:48px;background:linear-gradient(135deg,var(--red2),var(--red));border:none;border-radius:12px;color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(200,0,0,0.3);}
+
+/* EMPTY STATE */
+.empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);text-align:center;padding:40px;}
+.empty-chat i{font-size:3rem;margin-bottom:16px;opacity:.3;}
+.empty-chat h3{font-size:1rem;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.empty-chat p{font-size:.82rem;line-height:1.6;}
+.empty-chat button{margin-top:20px;padding:11px 24px;background:linear-gradient(135deg,var(--red2),var(--red));border:none;border-radius:11px;color:#fff;font-size:.86rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;gap:7px;transition:all var(--transition);}
+.empty-chat button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(200,0,0,0.3);}
+
+/* BADGE STYLES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:.66rem;font-weight:700;border:1px solid;}
+.badge-open{background:var(--green-glow);color:var(--green);border-color:rgba(34,197,94,0.25);}
+.badge-closed{background:rgba(128,128,128,0.1);color:var(--text3);border-color:rgba(128,128,128,0.2);}
+.badge-pending{background:var(--amber-glow);color:var(--amber);border-color:rgba(245,158,11,0.25);}
+
+/* ADMIN REPLY INDICATOR */
+.admin-badge-pill{display:inline-flex;align-items:center;gap:5px;background:var(--red-glow2);border:1px solid var(--border2);border-radius:20px;padding:2px 10px;font-size:.66rem;font-weight:700;color:var(--red);}
+
+/* TOAST */
+#toastBox{position:fixed;top:72px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:.83rem;font-weight:600;color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,0.4);animation:toastIn .3s ease;min-width:220px;backdrop-filter:blur(10px);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success i{color:#4ade80;}.toast.error i{color:#f87171;}.toast.info i{color:#60a5fa;}.toast.warn i{color:#f59e0b;}
+
+/* RESPONSIVE */
+@media(max-width:820px){
+  .layout{grid-template-columns:1fr;}
+  .left-panel{height:auto;position:relative;top:0;border-right:none;border-bottom:1px solid var(--border);max-height:300px;}
+  .right-panel{height:calc(100vh - 62px - 300px);}
+  .navbar{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo"><i class="fa-solid fa-droplet"></i> VitalDrop</a>
+  <div class="nav-r">
+    <a href="register.html" class="nav-link">Registry</a>
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <div class="user-pill">
+      <div class="user-av">MZ</div>
+      <span class="user-name">Mejbaul</span>
+    </div>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <i class="fa-solid fa-moon tgi moon"></i>
+      <i class="fa-solid fa-sun tgi sun"></i>
+    </div>
+  </div>
+</nav>
+
+<div id="toastBox"></div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- ── LEFT: TICKET LIST ── -->
+  <div class="left-panel">
+    <div class="panel-head">
+      <h2><i class="fa-solid fa-headset" style="color:var(--red);margin-right:8px;"></i>Support Center</h2>
+      <p>Your messages & complaints to VitalDrop admin</p>
+    </div>
+
+    <button class="new-ticket-btn" onclick="openModal()">
+      <i class="fa-solid fa-plus"></i> New Message / Complaint
+    </button>
+
+    <div class="panel-search">
+      <div class="psearch-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input class="psearch" placeholder="Search conversations…" oninput="searchTickets(this.value)">
+      </div>
+    </div>
+
+    <div class="ftabs">
+      <button class="ftab active" onclick="filterTickets('all',this)">All</button>
+      <button class="ftab" onclick="filterTickets('open',this)">Open</button>
+      <button class="ftab" onclick="filterTickets('pending',this)">Pending</button>
+      <button class="ftab" onclick="filterTickets('closed',this)">Closed</button>
+    </div>
+
+    <div class="ticket-list" id="ticketList"></div>
+  </div>
+
+  <!-- ── RIGHT: CHAT VIEW ── -->
+  <div class="right-panel" id="rightPanel">
+    <div class="empty-chat" id="emptyChat">
+      <i class="fa-solid fa-comments"></i>
+      <h3>No conversation selected</h3>
+      <p>Pick an existing conversation from the left, or start a new message to the VitalDrop admin team.</p>
+      <button onclick="openModal()"><i class="fa-solid fa-pen-to-square"></i> Start a Conversation</button>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- ══ NEW TICKET MODAL ══ -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="overlayClick(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-head">
+      <div>
+        <h3><i class="fa-solid fa-pen-to-square" style="color:var(--red);margin-right:8px;"></i>New Message / Complaint</h3>
+        <p>Send a message or complaint directly to the VitalDrop admin team</p>
+      </div>
+      <button class="mc" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- TYPE -->
+      <div class="fg">
+        <label>Message Type *</label>
+        <div class="type-grid">
+          <div class="type-opt sel-complaint" id="type-complaint" onclick="selectType('complaint')">
+            <div class="type-icon" style="background:rgba(239,68,68,0.15);color:#f87171;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div><div class="type-name">Complaint</div><div class="type-desc">About a donor or receiver</div></div>
+          </div>
+          <div class="type-opt" id="type-question" onclick="selectType('question')">
+            <div class="type-icon" style="background:var(--blue-glow);color:var(--blue);"><i class="fa-solid fa-circle-question"></i></div>
+            <div><div class="type-name">Question</div><div class="type-desc">Ask about the platform</div></div>
+          </div>
+          <div class="type-opt" id="type-report" onclick="selectType('report')">
+            <div class="type-icon" style="background:var(--amber-glow);color:var(--amber);"><i class="fa-solid fa-flag"></i></div>
+            <div><div class="type-name">Report User</div><div class="type-desc">Flag suspicious activity</div></div>
+          </div>
+          <div class="type-opt" id="type-general" onclick="selectType('general')">
+            <div class="type-icon" style="background:var(--green-glow);color:var(--green);"><i class="fa-solid fa-envelope"></i></div>
+            <div><div class="type-name">General</div><div class="type-desc">Feedback or other</div></div>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" id="selectedType" value="complaint">
+
+      <!-- ABOUT WHOM (for complaint/report) -->
+      <div id="aboutSection">
+        <div class="fg">
+          <label>About (Donor / Receiver) — optional</label>
+          <div style="display:flex;gap:8px;">
+            <select id="aboutPerson" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.86rem;font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);">
+              <option value="">Select a person you interacted with…</option>
+              <option value="donor_1">🩸 Md. Mejbaul Islam — O+ Donor — Mirpur</option>
+              <option value="donor_2">🩸 Fatema Akter Mim — A+ Donor — Chittagong</option>
+              <option value="donor_3">🩸 Karim Hassan — O- Donor — Rajshahi</option>
+              <option value="receiver_1">🏥 Shirin Akter — A- Receiver — Khulna</option>
+              <option value="receiver_2">🏥 Arif Hossain — O- Receiver — Dhaka</option>
+            </select>
+            <button onclick="tagPerson()" style="padding:0 14px;border-radius:10px;border:1px solid var(--border2);background:var(--red-glow2);color:var(--red);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Segoe UI',sans-serif;transition:all var(--transition);white-space:nowrap;">+ Tag</button>
+          </div>
+        </div>
+        <div id="taggedPerson" style="display:none;"></div>
+      </div>
+
+      <!-- SUBJECT -->
+      <div class="fg">
+        <label>Subject *</label>
+        <input type="text" id="ticketSubject" placeholder="e.g. Donor didn't show up for appointment">
+      </div>
+
+      <!-- PRIORITY -->
+      <div class="fg">
+        <label>Priority</label>
+        <div class="priority-row">
+          <button class="prio-opt p-low sel" onclick="selectPrio('low',this)">🟢 Low</button>
+          <button class="prio-opt p-med" onclick="selectPrio('med',this)">🟡 Medium</button>
+          <button class="prio-opt p-high" onclick="selectPrio('high',this)">🔴 High</button>
+        </div>
+      </div>
+      <input type="hidden" id="selectedPrio" value="low">
+
+      <!-- MESSAGE -->
+      <div class="fg">
+        <label>Message *</label>
+        <textarea id="ticketMsg" placeholder="Describe your issue, question, or complaint in detail. The more information you provide, the faster we can help you…"></textarea>
+      </div>
+
+      <!-- ATTACHMENT NOTE -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-glow);border:1px solid rgba(96,165,250,0.2);border-radius:10px;font-size:.78rem;color:var(--blue);">
+        <i class="fa-solid fa-circle-info"></i>
+        Your message will go directly to the VitalDrop admin team and will appear in their Messages panel. Average response time: <strong style="margin-left:4px;">under 2 hours.</strong>
+      </div>
+
+      <button class="submit-btn" onclick="submitTicket()">
+        <i class="fa-solid fa-paper-plane"></i> Send to Admin
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');localStorage.setItem('vd-theme',h.getAttribute('data-theme'));}
+(function(){const s=localStorage.getItem('vd-theme');if(s)document.documentElement.setAttribute('data-theme',s);})();
+
+/* ── TOAST ── */
+function toast(msg,type='success'){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info',warn:'fa-triangle-exclamation'};
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<i class="fa-solid ${icons[type]}"></i>${msg}`;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='.4s';},2800);
+  setTimeout(()=>el.remove(),3300);
+}
+
+/* ── INITIALS ── */
+const initials=n=>n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+/* ── DATA ── */
+const typeColors={complaint:'#f87171',question:'#60a5fa',report:'#f59e0b',general:'#22c55e'};
+const typeIcons={complaint:'fa-triangle-exclamation',question:'fa-circle-question',report:'fa-flag',general:'fa-envelope'};
+const typeBgs={complaint:'rgba(239,68,68,0.15)',question:'var(--blue-glow)',report:'var(--amber-glow)',general:'var(--green-glow)'};
+
+let tickets=[
+  {
+    id:1,subject:'Donor didn\'t respond to calls',type:'complaint',priority:'high',status:'open',
+    time:'2 hrs ago',preview:'I contacted the donor 3 times but got no response…',
+    tagged:{name:'Karim Hassan',role:'Donor — O-'},
+    messages:[
+      {from:'user',text:'I contacted the donor Karim Hassan 3 times after being matched but received no response at all. This is a critical situation — my patient urgently needed blood.',time:'10:32 AM',name:'Mejbaul Islam'},
+      {from:'admin',text:'Thank you for reporting this, Mejbaul. We have flagged this donor account and are investigating. We will ensure this does not happen again. Can you please share the date and time of your contact attempts?',time:'11:15 AM',name:'VitalDrop Admin'},
+      {from:'user',text:'I tried calling on April 14th at 9:00 AM, 10:30 AM, and again at 2:00 PM. No answer each time.',time:'11:28 AM',name:'Mejbaul Islam'},
+    ]
+  },
+  {
+    id:2,subject:'How do I update my last donation date?',type:'question',priority:'low',status:'pending',
+    time:'Yesterday',preview:'I can\'t find where to edit my donation history…',
+    tagged:null,
+    messages:[
+      {from:'user',text:'Hi, I recently donated blood but cannot find where to update my last donation date on my profile. Could you guide me?',time:'3:45 PM',name:'Mejbaul Islam'},
+    ]
+  },
+  {
+    id:3,subject:'Suspicious receiver profile — possible fraud',type:'report',priority:'high',status:'closed',
+    time:'3 days ago',preview:'The receiver asked me to donate outside the platform…',
+    tagged:{name:'Arif Hossain',role:'Receiver — O-'},
+    messages:[
+      {from:'user',text:'A receiver named Arif Hossain asked me to skip the platform and contact him privately. He said to bring cash for "transport costs." This feels like a scam.',time:'9:10 AM',name:'Mejbaul Islam'},
+      {from:'admin',text:'Thank you for this important report. We have immediately suspended this account pending investigation. You did the right thing by reporting it here. We are reviewing all their recent activity.',time:'9:55 AM',name:'VitalDrop Admin'},
+      {from:'admin',text:'Update: The account has been permanently blocked after our investigation confirmed fraudulent behavior. Thank you for keeping our community safe. This ticket is now closed.',time:'2:30 PM',name:'VitalDrop Admin'},
+    ]
+  },
+];
+let activeId=null;
+let currentFilter='all';
+let selectedType='complaint';
+let selectedPrio='low';
+let taggedPersonData=null;
+
+/* ── RENDER TICKET LIST ── */
+function renderList(filter='all',q=''){
+  const list=document.getElementById('ticketList');
+  const filtered=tickets.filter(t=>{
+    const matchF=filter==='all'||t.status===filter;
+    const matchQ=!q||t.subject.toLowerCase().includes(q)||t.preview.toLowerCase().includes(q);
+    return matchF&&matchQ;
+  });
+  list.innerHTML=filtered.map(t=>`
+    <div class="ticket-item${activeId===t.id?' active':''}" onclick="openTicket(${t.id})">
+      <div class="ti-top">
+        <div class="ti-icon" style="background:${typeBgs[t.type]};color:${typeColors[t.type]};"><i class="fa-solid ${typeIcons[t.type]}"></i></div>
+        <div class="ti-subject">${t.subject}</div>
+        ${t.messages[t.messages.length-1].from==='admin'&&t.status==='open'?'<div class="ti-unread"></div>':''}
+      </div>
+      <div class="ti-preview">${t.preview}</div>
+      <div class="ti-meta">
+        <span class="ti-time">${t.time}</span>
+        <span class="badge ${t.status==='open'?'badge-open':t.status==='pending'?'badge-pending':'badge-closed'}">${t.status}</span>
+      </div>
+    </div>`).join('');
+  if(!filtered.length)list.innerHTML=`<div style="text-align:center;padding:30px 20px;font-size:.8rem;color:var(--text3);">No conversations found</div>`;
+}
+
+/* ── OPEN TICKET ── */
+function openTicket(id){
+  activeId=id;
+  renderList(currentFilter);
+  const t=tickets.find(x=>x.id===id);
+  if(!t)return;
+  const rp=document.getElementById('rightPanel');
+  rp.innerHTML=`
+    <div class="chat-head">
+      <div class="chat-av" style="background:${typeBgs[t.type]};color:${typeColors[t.type]};">
+        <i class="fa-solid ${typeIcons[t.type]}"></i>
+      </div>
+      <div class="chat-info">
+        <div class="chat-title">${t.subject}</div>
+        <div class="chat-sub" style="display:flex;align-items:center;gap:8px;">
+          <span class="complaint-tag ${t.type}">${t.type.charAt(0).toUpperCase()+t.type.slice(1)}</span>
+          <span class="badge ${t.status==='open'?'badge-open':t.status==='pending'?'badge-pending':'badge-closed'}">${t.status}</span>
+          <span style="color:var(--text3);">·</span>
+          <span style="color:var(--text3);font-size:.72rem;">${t.time}</span>
+          ${t.tagged?`<span style="color:var(--text3);">·</span><span style="font-size:.72rem;color:var(--text2);">Re: ${t.tagged.name}</span>`:''}
+        </div>
+      </div>
+      <div class="chat-actions">
+        ${t.status!=='closed'?`<button class="ca-btn" onclick="closeTicket(${t.id})" title="Mark as resolved"><i class="fa-solid fa-circle-check"></i></button>`:''}
+        <button class="ca-btn" onclick="deleteTicket(${t.id})" title="Delete conversation"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="date-div">Conversation started</div>
+      ${t.tagged?`<div class="msg-status"><i class="fa-solid fa-user-tag" style="margin-right:5px;"></i>Regarding: <strong>${t.tagged.name}</strong> (${t.tagged.role})</div>`:''}
+      ${t.messages.map((m,i)=>`
+        <div class="msg-row ${m.from==='user'?'out':'in'}">
+          <div class="msg-av" style="${m.from==='user'?'background:var(--red-glow);color:var(--red);':'background:rgba(255,255,255,0.07);color:var(--text2);'}">
+            ${m.from==='user'?'MZ':'AD'}
+          </div>
+          <div>
+            <div class="msg-bubble">
+              ${m.from==='admin'?`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;"><span class="admin-badge-pill"><i class="fa-solid fa-shield-halved"></i> VitalDrop Admin</span></div>`:''}
+              ${m.text}
+              <div class="msg-time">${m.time}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+      ${t.status==='pending'?'<div class="msg-status"><i class="fa-solid fa-clock" style="margin-right:4px;"></i>Awaiting admin response — usually within 2 hours</div>':''}
+      ${t.status==='closed'?'<div class="msg-status"><i class="fa-solid fa-circle-check" style="color:var(--green);margin-right:4px;"></i>This ticket has been resolved and closed</div>':''}
+    </div>
+    ${t.status!=='closed'?`
+    <div class="chat-input-area">
+      <div class="input-toolbar">
+        <button class="tool-btn" onclick="insertTemplate('followup')"><i class="fa-solid fa-rotate-right"></i> Follow Up</button>
+        <button class="tool-btn" onclick="insertTemplate('evidence')"><i class="fa-solid fa-paperclip"></i> Add Evidence</button>
+        <button class="tool-btn" onclick="insertTemplate('urgent')"><i class="fa-solid fa-bolt"></i> Mark Urgent</button>
+      </div>
+      <div class="input-row">
+        <textarea class="msg-input" id="replyInput" placeholder="Type your reply to admin…" oninput="updateChar(this)" rows="1"></textarea>
+        <button class="send-btn" onclick="sendReply(${t.id})"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+      <div class="char-count" id="charCount">0 / 500</div>
+    </div>`:'<div style="padding:14px 24px;border-top:1px solid var(--border);background:var(--card2);text-align:center;font-size:.8rem;color:var(--text3);"><i class="fa-solid fa-lock" style="margin-right:5px;"></i>This ticket is closed. <a href="#" onclick="openModal();return false;" style="color:var(--red);font-weight:700;text-decoration:none;">Open a new one</a></div>'}
+  `;
+  // scroll to bottom
+  const msgs=document.getElementById('chatMsgs');
+  if(msgs)setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},50);
+}
+
+/* ── SEND REPLY ── */
+function sendReply(id){
+  const input=document.getElementById('replyInput');
+  const text=input.value.trim();
+  if(!text){toast('Please type a message','error');return;}
+  const t=tickets.find(x=>x.id===id);
+  if(!t)return;
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  t.messages.push({from:'user',text,time:now,name:'Mejbaul Islam'});
+  t.status='pending';
+  t.preview=text.slice(0,55)+(text.length>55?'…':'');
+  input.value='';
+  document.getElementById('charCount').textContent='0 / 500';
+  openTicket(id);
+  renderList(currentFilter);
+  toast('Reply sent to admin','success');
+  // simulate admin typing
+  setTimeout(()=>{
+    const t2=tickets.find(x=>x.id===id);
+    if(!t2||t2.status==='closed')return;
+    const replies=['Thank you for the update. We are looking into this right away.','Got it — our team is on it. We\'ll get back to you shortly.','Message received. We appreciate your patience while we review this.'];
+    t2.messages.push({from:'admin',text:replies[Math.floor(Math.random()*replies.length)],time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),name:'VitalDrop Admin'});
+    t2.status='open';
+    openTicket(id);
+    renderList(currentFilter);
+    toast('Admin replied to your message','info');
+  },3500);
+}
+
+/* ── TEMPLATES ── */
+function insertTemplate(type){
+  const input=document.getElementById('replyInput');
+  if(!input)return;
+  const templates={
+    followup:'I wanted to follow up on my previous message. Has there been any update on this issue?',
+    evidence:'I have additional evidence/screenshots to share regarding this issue: ',
+    urgent:'⚠️ URGENT: This situation has become critical and requires immediate attention.'
+  };
+  input.value=templates[type]||'';
+  input.focus();
+  updateChar(input);
+}
+function updateChar(el){const c=document.getElementById('charCount');if(c)c.textContent=`${el.value.length} / 500`;}
+
+/* ── CLOSE / DELETE TICKET ── */
+function closeTicket(id){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  t.status='closed';
+  openTicket(id);renderList(currentFilter);
+  toast('Ticket marked as resolved','success');
+}
+function deleteTicket(id){
+  if(!confirm('Delete this conversation?'))return;
+  tickets=tickets.filter(x=>x.id!==id);
+  activeId=null;
+  document.getElementById('rightPanel').innerHTML=`<div class="empty-chat"><i class="fa-solid fa-comments"></i><h3>No conversation selected</h3><p>Pick an existing conversation or start a new one.</p><button onclick="openModal()"><i class="fa-solid fa-pen-to-square"></i> Start a Conversation</button></div>`;
+  renderList(currentFilter);
+  toast('Conversation deleted','info');
+}
+
+/* ── FILTER ── */
+function filterTickets(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList(f);
+}
+function searchTickets(q){renderList(currentFilter,q.toLowerCase());}
+
+/* ── MODAL ── */
+function openModal(){document.getElementById('modalOverlay').classList.remove('hidden');document.body.style.overflow='hidden';selectType('complaint');}
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');document.body.style.overflow='';}
+function overlayClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+
+/* ── SELECT TYPE ── */
+function selectType(type){
+  selectedType=type;
+  document.getElementById('selectedType').value=type;
+  ['complaint','question','report','general'].forEach(t=>{
+    const el=document.getElementById('type-'+t);
+    el.className='type-opt'+(t===type?' sel-'+t:'');
+  });
+  document.getElementById('aboutSection').style.display=['complaint','report'].includes(type)?'':'none';
+}
+
+/* ── SELECT PRIO ── */
+function selectPrio(p,btn){
+  selectedPrio=p;
+  document.getElementById('selectedPrio').value=p;
+  document.querySelectorAll('.prio-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+/* ── TAG PERSON ── */
+function tagPerson(){
+  const sel=document.getElementById('aboutPerson');
+  const val=sel.value;if(!val)return;
+  const txt=sel.options[sel.selectedIndex].text;
+  const parts=txt.replace(/^[🩸🏥]\s*/,'').split(' — ');
+  taggedPersonData={name:parts[0],role:parts.slice(1).join(' — ')};
+  const color=val.startsWith('donor')?'var(--red)':'var(--blue)';
+  const bg=val.startsWith('donor')?'var(--red-glow)':'var(--blue-glow)';
+  document.getElementById('taggedPerson').style.display='block';
+  document.getElementById('taggedPerson').innerHTML=`
+    <div class="tag-person">
+      <div class="tp-av" style="background:${bg};color:${color};">${initials(parts[0])}</div>
+      <div><div class="tp-name">${parts[0]}</div><div class="tp-role">${parts.slice(1).join(' · ')}</div></div>
+      <button class="remove-tag" onclick="removeTag()"><i class="fa-solid fa-xmark"></i></button>
+    </div>`;
+}
+function removeTag(){taggedPersonData=null;document.getElementById('taggedPerson').style.display='none';document.getElementById('aboutPerson').value='';}
+
+/* ── REPLACE just the submitTicket() function in usermessage.html ── */
+
+async function submitTicket() {
+  const subject  = document.getElementById('ticketSubject').value.trim();
+  const msg      = document.getElementById('ticketMsg').value.trim();
+  const type     = document.getElementById('selectedType').value;
+  const priority = document.getElementById('selectedPrio').value;
+
+  if (!subject) { toast('Please enter a subject', 'error'); return; }
+  if (!msg)     { toast('Please write your message', 'error'); return; }
+
+  try {
+    const res = await fetch('/api/send_message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject:  subject,
+        message:  msg,
+        type:     type,
+        priority: priority,
+        tagged:   taggedPersonData || null
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast(data.error || 'Failed to send message', 'error');
+      return;
+    }
+
+    toast('Message sent to admin successfully!', 'success');
+    closeModal();
+
+    // reset form
+    document.getElementById('ticketSubject').value = '';
+    document.getElementById('ticketMsg').value = '';
+    removeTag();
+    taggedPersonData = null;
+    selectType('complaint');
+
+  } catch (e) {
+    console.error(e);
+    toast('Connection error — is Flask running?', 'error');
+  }
+}
+/* ── INIT ── */
+renderList();
+</script>
+
+</body>
+</html>

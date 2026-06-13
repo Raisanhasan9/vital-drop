@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalDrop — Sign In</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ══════════════════════════════════════════
+   THEME TOKENS
+══════════════════════════════════════════ */
+:root {
+  --transition: .3s ease;
+}
+[data-theme="dark"] {
+  --bg:         #080000;
+  --bg2:        #110303;
+  --card:       rgba(18,3,3,0.92);
+  --border:     rgba(255,60,60,0.12);
+  --border2:    rgba(255,60,60,0.22);
+  --text:       #f0e8e8;
+  --text2:      #9a8080;
+  --text3:      #5a4040;
+  --input-bg:   rgba(0,0,0,0.5);
+  --input-border: rgba(255,255,255,0.08);
+  --nav-bg:     rgba(6,0,0,0.92);
+  --red:        #ff3333;
+  --red2:       #c0392b;
+  --red-glow:   rgba(255,50,50,0.18);
+  --red-glow2:  rgba(255,50,50,0.08);
+  --shadow:     0 24px 70px rgba(0,0,0,0.7);
+  --grid-color: rgba(255,255,255,0.025);
+}
+[data-theme="light"] {
+  --bg:         #fff5f5;
+  --bg2:        #fff0f0;
+  --card:       rgba(255,255,255,0.96);
+  --border:     rgba(200,40,40,0.15);
+  --border2:    rgba(200,40,40,0.3);
+  --text:       #1a0a0a;
+  --text2:      #7a4040;
+  --text3:      #bba0a0;
+  --input-bg:   rgba(255,245,245,0.9);
+  --input-border: rgba(200,40,40,0.2);
+  --nav-bg:     rgba(255,248,248,0.95);
+  --red:        #c0392b;
+  --red2:       #a93226;
+  --red-glow:   rgba(192,57,43,0.12);
+  --red-glow2:  rgba(192,57,43,0.06);
+  --shadow:     0 24px 70px rgba(180,30,30,0.12);
+  --grid-color: rgba(180,30,30,0.04);
+}
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background var(--transition), color var(--transition);
+}
+
+/* ══════════════════════════════════════════
+   ANIMATED BACKGROUND
+══════════════════════════════════════════ */
+.bg-layer{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size:44px 44px;
+}
+.bg-orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(60px);
+  animation:orbFloat 12s ease-in-out infinite;
+}
+.bg-orb1{
+  width:500px;height:500px;top:-150px;left:-150px;
+  background:radial-gradient(circle, rgba(180,0,0,0.14) 0%, transparent 70%);
+}
+.bg-orb2{
+  width:400px;height:400px;bottom:-100px;right:-100px;
+  background:radial-gradient(circle, rgba(180,0,0,0.1) 0%, transparent 70%);
+  animation-delay:-6s;
+}
+@keyframes orbFloat{
+  0%,100%{transform:translate(0,0);}
+  50%{transform:translate(30px,20px);}
+}
+
+/* ══════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════ */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:64px;
+  background:var(--nav-bg);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+  transition:background var(--transition), border-color var(--transition);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:1.5rem;font-weight:900;
+  color:var(--red);letter-spacing:-.03em;
+  text-decoration:none;
+}
+.logo i{filter:drop-shadow(0 0 8px var(--red));}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-link{
+  color:var(--text2);text-decoration:none;
+  font-size:.88rem;font-weight:600;
+  transition:color var(--transition);
+}
+.nav-link:hover{color:var(--text);}
+
+/* THEME TOGGLE */
+.theme-toggle{
+  width:42px;height:24px;
+  background:var(--input-bg);
+  border:1px solid var(--border2);
+  border-radius:24px;
+  cursor:pointer;
+  position:relative;
+  transition:all var(--transition);
+  flex-shrink:0;
+}
+.theme-toggle::after{
+  content:'';
+  position:absolute;
+  top:3px;left:3px;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:var(--red);
+  transition:transform var(--transition);
+  box-shadow:0 0 6px var(--red);
+}
+[data-theme="light"] .theme-toggle::after{transform:translateX(18px);}
+.theme-icon{
+  position:absolute;
+  top:50%;transform:translateY(-50%);
+  font-size:.6rem;color:var(--text2);
+  pointer-events:none;
+}
+.theme-icon.moon{left:6px;}
+.theme-icon.sun{right:5px;}
+
+/* ══════════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════════ */
+.page-wrap{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+
+/* ── LEFT PANEL (visual) ── */
+.left-panel{
+  position:relative;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 60px;
+  background:linear-gradient(150deg, rgba(120,0,0,0.45) 0%, rgba(0,0,0,0.1) 100%);
+}
+[data-theme="light"] .left-panel{
+  background:linear-gradient(150deg, rgba(192,57,43,0.12) 0%, rgba(255,200,200,0.08) 100%);
+}
+.left-panel-img{
+  width:100%;max-width:360px;
+  border-radius:28px;
+  overflow:hidden;
+  border:1px solid var(--border2);
+  box-shadow:0 30px 80px rgba(180,0,0,0.25);
+  margin-bottom:36px;
+  aspect-ratio:4/3;
+  background:linear-gradient(135deg, #3a0000 0%, #1a0000 100%);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.blood-visual{
+  position:relative;z-index:2;
+  text-align:center;
+}
+.blood-drop-big{
+  font-size:5rem;
+  filter:drop-shadow(0 0 30px rgba(255,50,50,0.6));
+  animation:dropPulse 3s ease-in-out infinite;
+  display:block;margin-bottom:16px;
+}
+@keyframes dropPulse{
+  0%,100%{transform:scale(1) translateY(0);}
+  50%{transform:scale(1.06) translateY(-8px);}
+}
+.blood-cells{
+  position:absolute;inset:0;overflow:hidden;
+  pointer-events:none;
+}
+.cell{
+  position:absolute;
+  width:12px;height:12px;
+  border-radius:50%;
+  background:rgba(255,50,50,0.35);
+  animation:floatCell linear infinite;
+}
+@keyframes floatCell{
+  0%{transform:translateY(100%) scale(0);opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:.5;}
+  100%{transform:translateY(-200%) scale(1.5);opacity:0;}
+}
+.img-caption{
+  font-size:.82rem;color:rgba(255,200,200,0.7);
+  text-align:center;margin-top:8px;letter-spacing:.04em;
+}
+[data-theme="light"] .img-caption{color:var(--text2);}
+
+.left-quote{
+  max-width:340px;text-align:center;
+}
+.left-quote blockquote{
+  font-size:1.2rem;font-weight:700;
+  color:var(--text);
+  line-height:1.5;margin-bottom:12px;
+}
+.left-quote blockquote span{color:var(--red);}
+.left-quote cite{
+  font-size:.82rem;color:var(--text2);
+  font-style:normal;font-weight:600;
+}
+
+.stats-row{
+  display:flex;gap:28px;margin-top:32px;
+}
+.mini-stat{text-align:center;}
+.mini-stat-val{font-size:1.6rem;font-weight:900;color:var(--red);}
+.mini-stat-lbl{font-size:.68rem;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+
+/* ── RIGHT PANEL (form) ── */
+.right-panel{
+  display:flex;align-items:center;justify-content:center;
+  padding:80px 60px;
+  background:var(--bg2);
+  transition:background var(--transition);
+}
+.login-card{
+  width:100%;max-width:420px;
+}
+
+/* ── CARD HEADER ── */
+.card-header{margin-bottom:36px;}
+.card-header-top{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:8px;
+}
+.card-icon{
+  width:44px;height:44px;
+  border-radius:12px;
+  background:var(--red-glow);
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:var(--red);
+}
+.card-header h1{
+  font-size:1.7rem;font-weight:900;
+  color:var(--text);letter-spacing:-.025em;
+}
+.card-header p{
+  font-size:.88rem;color:var(--text2);line-height:1.6;
+  margin-top:6px;
+}
+
+/* ── ROLE SELECTOR ── */
+.role-selector{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:28px;
+}
+.role-btn{
+  padding:11px;
+  border-radius:12px;
+  border:1px solid var(--input-border);
+  background:var(--input-bg);
+  color:var(--text2);
+  font-size:.8rem;font-weight:700;
+  cursor:pointer;
+  transition:all var(--transition);
+  font-family:'Segoe UI',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.role-btn:hover{border-color:var(--border2);color:var(--text);}
+.role-btn.active{
+  border-color:var(--red);
+  background:var(--red-glow);
+  color:var(--red);
+}
+
+/* ── FORM ── */
+.form-group{margin-bottom:18px;}
+.form-group label{
+  display:block;
+  font-size:.72rem;font-weight:700;
+  color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:8px;
+  transition:color var(--transition);
+}
+.input-wrap{position:relative;}
+.input-icon{
+  position:absolute;left:15px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:.9rem;pointer-events:none;
+  transition:color var(--transition);
+}
+.form-control{
+  width:100%;
+  background:var(--input-bg);
+  border:1px solid var(--input-border);
+  border-radius:12px;
+  padding:13px 16px 13px 44px;
+  color:var(--text);
+  font-size:.9rem;
+  font-family:'Segoe UI',sans-serif;
+  outline:none;
+  transition:all var(--transition);
+ -webkit-appearance:none;
+appearance:none;
+}
+.form-control::placeholder{color:var(--text3);}ioloo
+.form-control:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 3px var(--red-glow2);
+  background:var(--input-bg);
+}
+.form-control:focus ~ .input-icon,
+.input-wrap:focus-within .input-icon{color:var(--red);}
+
+/* password toggle */
+.pw-toggle{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--text3);cursor:pointer;font-size:.9rem;
+  transition:color var(--transition);
+}
+.pw-toggle:hover{color:var(--red);}
+
+/* ── FORM ROW ── */
+.form-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.remember{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.remember input[type="checkbox"]{
+  width:16px;height:16px;accent-color:var(--red);cursor:pointer;
+}
+.remember span{font-size:.82rem;color:var(--text2);}
+.forgot-link{
+  font-size:.82rem;color:var(--red);
+  text-decoration:none;font-weight:600;
+  transition:opacity var(--transition);
+}
+.forgot-link:hover{opacity:.7;}
+
+/* ── SUBMIT BTN ── */
+.submit-btn{
+  width:100%;height:52px;
+  border:none;border-radius:13px;
+  background:linear-gradient(135deg, var(--red2), var(--red));
+  color:#fff;
+  font-size:.92rem;font-weight:800;letter-spacing:.06em;
+  cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:transform var(--transition), box-shadow var(--transition);
+  font-family:'Segoe UI',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.submit-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+  transform:translateX(-100%);transition:.6s;
+}
+.submit-btn:hover::before{transform:translateX(100%);}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(200,0,0,0.32);}
+.submit-btn:active{transform:translateY(0);}
+.submit-btn.loading{pointer-events:none;opacity:.75;}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin:20px 0;
+}
+.divider-line{flex:1;height:1px;background:var(--border);}
+.divider-text{font-size:.75rem;color:var(--text3);font-weight:600;}
+
+/* ── SOCIAL BTNS ── */
+.social-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.social-btn{
+  height:44px;
+  border:1px solid var(--input-border);
+  border-radius:11px;
+  background:var(--input-bg);
+  color:var(--text2);
+  font-size:.82rem;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-family:'Segoe UI',sans-serif;
+  transition:all var(--transition);
+}
+.social-btn:hover{border-color:var(--border2);color:var(--text);}
+.social-btn i{font-size:.95rem;}
+
+/* ── FOOTER LINK ── */
+.card-footer{
+  margin-top:24px;text-align:center;
+  font-size:.85rem;color:var(--text2);
+}
+.card-footer a{
+  color:var(--red);text-decoration:none;font-weight:700;
+}
+.card-footer a:hover{text-decoration:underline;}
+
+/* ── ADMIN LINK ── */
+.admin-hint{
+  margin-top:14px;
+  padding:11px 16px;
+  background:var(--red-glow2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:.78rem;color:var(--text2);
+  text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.admin-hint i{color:var(--red);}
+.admin-hint a{color:var(--red);text-decoration:none;font-weight:700;}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toastBox{
+  position:fixed;top:74px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:12px 18px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.84rem;font-weight:600;color:var(--text);
+  box-shadow:0 8px 28px rgba(0,0,0,0.4);
+  animation:toastIn .3s ease;
+  min-width:240px;
+  backdrop-filter:blur(10px);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success i{color:#4ade80;}
+.toast.error i{color:#f87171;}
+.toast.info i{color:#60a5fa;}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:900px){
+  .page-wrap{grid-template-columns:1fr;}
+  .left-panel{display:none;}
+  .right-panel{padding:100px 24px 60px;}
+  .navbar{padding:0 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb bg-orb1"></div>
+  <div class="bg-orb bg-orb2"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <i class="fa-solid fa-droplet"></i>VitalDrop
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="register.html" class="nav-link">Register</a>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark">
+      <i class="fa-solid fa-moon theme-icon moon"></i>
+      <i class="fa-solid fa-sun theme-icon sun"></i>
+    </div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div id="toastBox"></div>
+
+<!-- MAIN -->
+<div class="page-wrap">
+
+  <!-- ── LEFT VISUAL ── -->
+  <div class="left-panel">
+    <div class="left-panel-img">
+      <!-- Animated blood cells visual -->
+      <div class="blood-cells" id="bloodCells"></div>
+      <div class="blood-visual">
+        <span class="blood-drop-big">🩸</span>
+        <div style="font-size:1rem;font-weight:800;color:rgba(255,180,180,0.9);letter-spacing:.06em;">BLOOD DONATION</div>
+        <div style="font-size:.75rem;color:rgba(255,150,150,0.5);margin-top:4px;letter-spacing:.1em;">SAVING LIVES EVERY DAY</div>
+      </div>
+    </div>
+    <p class="img-caption"><i class="fa-solid fa-circle" style="color:#22c55e;font-size:.5rem;margin-right:5px;"></i>Bangladesh Blood Donation Network — Active</p>
+
+    <div class="left-quote">
+      <blockquote>"The <span>gift of blood</span> is the gift of life. There is no greater act of love."</blockquote>
+      <cite>— World Health Organization</cite>
+    </div>
+
+    <div class="stats-row">
+      <div class="mini-stat"><div class="mini-stat-val">12K+</div><div class="mini-stat-lbl">Donors</div></div>
+      <div class="mini-stat"><div class="mini-stat-val">36K</div><div class="mini-stat-lbl">Lives Saved</div></div>
+      <div class="mini-stat"><div class="mini-stat-val">64</div><div class="mini-stat-lbl">Districts</div></div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT FORM ── -->
+  <div class="right-panel">
+    <div class="login-card">
+
+      <div class="card-header">
+        <div class="card-header-top">
+          <div class="card-icon"><i class="fa-solid fa-right-to-bracket"></i></div>
+          <h1>Welcome Back</h1>
+        </div>
+        <p>Sign in to your VitalDrop account to continue saving lives.</p>
+      </div>
+
+      <!-- Role selector -->
+      <div class="role-selector">
+        <button type="button" class="role-btn active" id="roleUser" onclick="selectLoginRole('user')">
+          <i class="fa-solid fa-user"></i> Donor / Receiver
+        </button>
+        <button type="button" class="role-btn" id="roleAdmin" onclick="selectLoginRole('admin')">
+          <i class="fa-solid fa-shield-halved"></i> Admin
+        </button>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <input type="hidden" id="loginRole" value="user">
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" class="form-control" placeholder="yourmail@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+            <span class="pw-toggle" onclick="togglePw('loginPassword',this)"><i class="fa-solid fa-eye-slash"></i></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="remember">
+            <input type="checkbox" id="rememberMe"> <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket"></i> SIGN IN
+        </button>
+      </form>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">or continue with</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="social-row">
+        <button class="social-btn"><i class="fa-brands fa-google" style="color:#ea4335;"></i> Google</button>
+        <button class="social-btn"><i class="fa-brands fa-facebook" style="color:#1877f2;"></i> Facebook</button>
+      </div>
+
+      <div class="card-footer">
+        Don't have an account? <a href="/register">Register now</a>
+      </div>
+
+      <div class="admin-hint" id="adminHint" style="display:none;">
+        <i class="fa-solid fa-shield-halved"></i>
+        Admin access is restricted. <a href="#">Contact support</a> if you need help.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+  localStorage.setItem('vd-theme', html.getAttribute('data-theme'));
+}
+(function(){
+  const saved = localStorage.getItem('vd-theme');
+  if(saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+
+/* ── TOAST ── */
+function toast(msg, type='success'){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<i class="fa-solid ${icons[type]}"></i>${msg}`;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='.4s';},2800);
+  setTimeout(()=>el.remove(),3300);
+}
+
+/* ── ROLE SELECT ── */
+function selectLoginRole(role){
+  document.getElementById('loginRole').value = role;
+  document.getElementById('roleUser').classList.toggle('active', role==='user');
+  document.getElementById('roleAdmin').classList.toggle('active', role==='admin');
+  document.getElementById('adminHint').style.display = role==='admin' ? 'flex' : 'none';
+}
+
+/* ── PASSWORD TOGGLE ── */
+function togglePw(id, el){
+  const input = document.getElementById(id);
+  const isText = input.type==='text';
+  input.type = isText ? 'password' : 'text';
+  el.querySelector('i').className = isText ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+
+/* ── BLOOD CELLS ANIMATION ── */
+(function(){
+  const container = document.getElementById('bloodCells');
+  if(!container) return;
+  for(let i=0;i<18;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.style.cssText=`
+      left:${Math.random()*100}%;
+      width:${6+Math.random()*14}px;
+      height:${6+Math.random()*14}px;
+      animation-duration:${4+Math.random()*8}s;
+      animation-delay:${Math.random()*8}s;
+      opacity:${.2+Math.random()*.5};
+    `;
+    container.appendChild(cell);
+  }
+})();
+
+/* ── LOGIN HANDLER ── */
+async function handleLogin(e){
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const role = document.getElementById('loginRole').value;
+
+  if(!email || !password){ toast('Please fill in all fields','error'); return; }
+
+  btn.classList.add('loading');
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> SIGNING IN...';
+
+  try{
+    const endpoint = role==='admin' ? '/api/admin_login' : '/api/login';
+    const res = await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials: 'include',
+      body:JSON.stringify({email,password})
+    });
+    
+    const data = await res.json();
+
+    if(res.ok && data.success){
+      // Store session
+      localStorage.setItem('vd-user', JSON.stringify({
+        ...data.user, role: data.role || role
+      }));
+      toast('Welcome back! Redirecting...','success');
+      setTimeout(()=>{
+        window.location.href = role==='admin' ? '/admin/dashboard' : '/index';
+      },1200);
+    } else {
+      toast(data.error || 'Invalid credentials','error');
+    }
+    
+  } catch(err){
+    console.error(err);
+    toast('Server offline — make sure Flask is running','error');
+  }
+
+  btn.classList.remove('loading');
+  btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> SIGN IN';
+}
+</script>
+</body>
+</html>

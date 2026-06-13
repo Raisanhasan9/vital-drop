@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalDrop — Register</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ══ TOKENS ══════════════════════════════════ */
+:root{--transition:.3s ease;}
+[data-theme="dark"]{
+  --bg:#080000;--bg2:#0e0202;
+  --card:rgba(16,3,3,0.95);
+  --border:rgba(255,55,55,0.12);--border2:rgba(255,55,55,0.25);
+  --text:#f0e8e8;--text2:#9a8080;--text3:#4a3030;
+  --input-bg:rgba(0,0,0,0.45);--input-border:rgba(255,255,255,0.08);
+  --nav-bg:rgba(6,0,0,0.92);
+  --red:#ff3333;--red2:#c0392b;
+  --red-glow:rgba(255,50,50,0.15);--red-glow2:rgba(255,50,50,0.07);
+  --green:#22c55e;--blue:#3b82f6;
+  --grid-color:rgba(255,255,255,0.022);
+  --shadow:0 24px 70px rgba(0,0,0,0.6);
+}
+[data-theme="light"]{
+  --bg:#fff5f5;--bg2:#fff8f8;
+  --card:rgba(255,255,255,0.97);
+  --border:rgba(192,57,43,0.14);--border2:rgba(192,57,43,0.28);
+  --text:#1a0a0a;--text2:#7a4040;--text3:#bba0a0;
+  --input-bg:rgba(255,248,248,0.9);--input-border:rgba(192,57,43,0.18);
+  --nav-bg:rgba(255,248,248,0.95);
+  --red:#c0392b;--red2:#a93226;
+  --red-glow:rgba(192,57,43,0.1);--red-glow2:rgba(192,57,43,0.05);
+  --green:#16a34a;--blue:#2563eb;
+  --grid-color:rgba(180,30,30,0.035);
+  --shadow:0 24px 70px rgba(180,30,30,0.1);
+}
+/* ══ RESET ══════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  transition:background var(--transition),color var(--transition);
+}
+/* ══ BG ══ */
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(70px);animation:orbF 14s ease-in-out infinite;}
+.bg-orb1{width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(160,0,0,0.12) 0%,transparent 70%);}
+.bg-orb2{width:500px;height:500px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(160,0,0,0.09) 0%,transparent 70%);animation-delay:-7s;}
+@keyframes orbF{0%,100%{transform:translate(0,0);}50%{transform:translate(25px,18px);}}
+/* ══ NAVBAR ══ */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:64px;
+  background:var(--nav-bg);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;transition:background var(--transition),border-color var(--transition);
+}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:900;color:var(--red);letter-spacing:-.03em;text-decoration:none;}
+.logo i{filter:drop-shadow(0 0 8px var(--red));}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-link{color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:600;transition:color var(--transition);}
+.nav-link:hover{color:var(--text);}
+.theme-toggle{
+  width:42px;height:24px;background:var(--input-bg);
+  border:1px solid var(--border2);border-radius:24px;cursor:pointer;
+  position:relative;transition:all var(--transition);flex-shrink:0;
+}
+.theme-toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;background:var(--red);
+  transition:transform var(--transition);box-shadow:0 0 6px var(--red);
+}
+[data-theme="light"] .theme-toggle::after{transform:translateX(18px);}
+.theme-icon{position:absolute;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text2);pointer-events:none;}
+.theme-icon.moon{left:6px;}.theme-icon.sun{right:5px;}
+/* ══ PAGE ══ */
+.page-wrap{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:88px 24px 60px;
+}
+/* ══ REGISTER CARD ══ */
+.register-card{
+  width:100%;max-width:780px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  backdrop-filter:blur(20px);
+  transition:background var(--transition),border-color var(--transition);
+}
+/* Card top strip */
+.card-strip{
+  height:4px;
+  background:linear-gradient(90deg,var(--red2),var(--red),transparent);
+}
+.card-body{padding:44px 48px;}
+/* ══ HEADER ══ */
+.reg-header{text-align:center;margin-bottom:36px;}
+.reg-icon-wrap{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--red-glow);
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;position:relative;
+}
+.reg-icon-wrap::before{
+  content:'';position:absolute;inset:-10px;border-radius:50%;
+  border:1px solid var(--border);
+  animation:ringPulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.07);opacity:.9;}}
+.reg-icon-wrap i{font-size:2rem;color:var(--red);filter:drop-shadow(0 0 12px var(--red));}
+.reg-header h1{font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.025em;margin-bottom:8px;}
+.reg-header p{font-size:.88rem;color:var(--text2);line-height:1.6;}
+/* ══ ROLE TOGGLE ══ */
+.role-toggle{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:32px;
+}
+.role-opt{
+  padding:14px;border-radius:14px;
+  border:1px solid var(--input-border);background:var(--input-bg);
+  color:var(--text2);font-size:.85rem;font-weight:700;
+  cursor:pointer;text-align:center;
+  transition:all var(--transition);font-family:'Segoe UI',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.role-opt:hover{border-color:var(--border2);color:var(--text);}
+.role-opt.active-donor{border-color:var(--green);background:rgba(34,197,94,0.1);color:var(--green);}
+.role-opt.active-receiver{border-color:var(--blue);background:rgba(59,130,246,0.1);color:var(--blue);}
+/* ══ PROGRESS STEPS ══ */
+.steps-bar{
+  display:flex;align-items:center;
+  margin-bottom:32px;gap:0;
+}
+.step{
+  display:flex;flex-direction:column;align-items:center;
+  flex:1;position:relative;
+}
+.step::after{
+  content:'';position:absolute;top:16px;left:50%;
+  width:100%;height:2px;background:var(--border);z-index:0;
+}
+.step:last-child::after{display:none;}
+.step-dot{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--border2);background:var(--input-bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:800;color:var(--text3);
+  position:relative;z-index:1;
+  transition:all var(--transition);
+}
+.step.active .step-dot{border-color:var(--red);background:var(--red);color:#fff;}
+.step.done .step-dot{border-color:var(--green);background:var(--green);color:#fff;}
+.step::after{transition:background var(--transition);}
+.step.done::after{background:var(--green);}
+.step-label{font-size:.65rem;font-weight:700;color:var(--text3);margin-top:6px;text-transform:uppercase;letter-spacing:.06em;}
+.step.active .step-label,.step.done .step-label{color:var(--text2);}
+/* ══ FORM ══ */
+.form-step{display:none;}
+.form-step.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;}
+.fields-grid .full{grid-column:1/-1;}
+.form-group{margin-bottom:18px;}
+.form-group label{
+  display:block;font-size:.72rem;font-weight:700;
+  color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;
+  transition:color var(--transition);
+}
+.form-group label .req{color:var(--red);}
+.input-wrap{position:relative;}
+.input-icon{
+  position:absolute;left:15px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:.9rem;pointer-events:none;transition:color var(--transition);
+}
+.input-wrap:focus-within .input-icon{color:var(--red);}
+.form-control{
+  width:100%;background:var(--input-bg);
+  border:1px solid var(--input-border);border-radius:12px;
+  padding:13px 16px 13px 44px;color:var(--text);font-size:.9rem;
+  font-family:'Segoe UI',sans-serif;outline:none;transition:all var(--transition);
+  -webkit-appearance:none;
+appearance:none;
+}
+.form-control::placeholder{color:var(--text3);}
+.form-control:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow2);}
+.form-control option{background:#1a0000;}
+[data-theme="light"] .form-control option{background:#fff8f8;color:#1a0a0a;}
+select.form-control{cursor:pointer;}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;transition:color var(--transition);}
+.pw-toggle:hover{color:var(--red);}
+/* strength bar */
+.pw-strength{margin-top:8px;}
+.pw-strength-bar{height:4px;border-radius:4px;background:var(--border);overflow:hidden;margin-bottom:4px;}
+.pw-strength-fill{height:100%;width:0;border-radius:4px;transition:all .4s;}
+.pw-strength-label{font-size:.68rem;color:var(--text3);}
+/* ══ DIVIDER ══ */
+.section-divider{
+  display:flex;align-items:center;gap:10px;margin:8px 0 20px;
+}
+.section-divider-line{flex:1;height:1px;background:var(--border);}
+.section-divider-text{font-size:.72rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;}
+/* ══ TERMS ══ */
+.terms-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 16px;background:var(--red-glow2);
+  border:1px solid var(--border);border-radius:10px;margin-bottom:24px;
+}
+.terms-row input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0;margin-top:2px;cursor:pointer;}
+.terms-row span{font-size:.82rem;color:var(--text2);line-height:1.5;}
+.terms-row a{color:var(--red);text-decoration:none;font-weight:700;}
+/* ══ BUTTONS ══ */
+.btn-row{display:flex;gap:12px;}
+.btn-next,.btn-submit{
+  flex:1;height:52px;border:none;border-radius:13px;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:#fff;font-size:.92rem;font-weight:800;letter-spacing:.06em;
+  cursor:pointer;transition:all var(--transition);font-family:'Segoe UI',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  position:relative;overflow:hidden;
+}
+.btn-next::before,.btn-submit::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+  transform:translateX(-100%);transition:.6s;
+}
+.btn-next:hover::before,.btn-submit:hover::before{transform:translateX(100%);}
+.btn-next:hover,.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(200,0,0,0.3);}
+.btn-back{
+  height:52px;padding:0 24px;
+  border:1px solid var(--border2);border-radius:13px;
+  background:transparent;color:var(--text2);
+  font-size:.88rem;font-weight:700;cursor:pointer;
+  transition:all var(--transition);font-family:'Segoe UI',sans-serif;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-back:hover{background:var(--red-glow2);color:var(--text);}
+.btn-submit.loading{pointer-events:none;opacity:.75;}
+/* ══ FOOTER ══ */
+.card-footer{
+  padding:20px 48px;
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:.85rem;color:var(--text2);
+  background:var(--red-glow2);
+  transition:background var(--transition);
+}
+.card-footer a{color:var(--red);text-decoration:none;font-weight:700;}
+/* ══ TOAST ══ */
+#toastBox{position:fixed;top:74px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  padding:12px 18px;display:flex;align-items:center;gap:10px;
+  font-size:.84rem;font-weight:600;color:var(--text);
+  box-shadow:0 8px 28px rgba(0,0,0,0.4);animation:toastIn .3s ease;min-width:240px;
+  backdrop-filter:blur(10px);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.toast.success i{color:#4ade80;}.toast.error i{color:#f87171;}.toast.info i{color:#60a5fa;}
+/* ══ RESPONSIVE ══ */
+@media(max-width:700px){
+  .card-body{padding:28px 22px;}
+  .fields-grid{grid-template-columns:1fr;}
+  .fields-grid .full{grid-column:auto;}
+  .navbar{padding:0 20px;}
+  .card-footer{padding:16px 22px;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb bg-orb1"></div>
+  <div class="bg-orb bg-orb2"></div>
+</div>
+
+<nav class="navbar">
+  <a href="index.html" class="logo"><i class="fa-solid fa-droplet"></i>VitalDrop</a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="login.html" class="nav-link">Sign In</a>
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+      <i class="fa-solid fa-moon theme-icon moon"></i>
+      <i class="fa-solid fa-sun theme-icon sun"></i>
+    </div>
+  </div>
+</nav>
+
+<div id="toastBox"></div>
+
+<div class="page-wrap">
+  <div class="register-card">
+    <div class="card-strip"></div>
+    <div class="card-body">
+
+      <!-- Header -->
+      <div class="reg-header">
+        <div class="reg-icon-wrap"><i class="fa-solid fa-heart-pulse"></i></div>
+        <h1>Become a Lifesaver</h1>
+        <p>Join Bangladesh's premier blood donation network. Register below to start saving lives.</p>
+      </div>
+
+      <!-- Role Toggle -->
+      <div class="role-toggle">
+        <div class="role-opt active-donor" id="regRoleDonor" onclick="selectRegRole('donor')">
+          <i class="fa-solid fa-droplet"></i> I Want to Donate
+        </div>
+        <div class="role-opt" id="regRoleReceiver" onclick="selectRegRole('receiver')">
+          <i class="fa-solid fa-hospital"></i> I Need Blood
+        </div>
+      </div>
+      <input type="hidden" id="regRole" value="donor">
+
+      <!-- Steps Bar -->
+      <div class="steps-bar" id="stepsBar">
+        <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">Personal</div></div>
+        <div class="step" id="step2"><div class="step-dot">2</div><div class="step-label">Medical</div></div>
+        <div class="step" id="step3"><div class="step-dot">3</div><div class="step-label">Security</div></div>
+      </div>
+
+      <form id="registerForm" onsubmit="handleRegister(event)">
+
+        <!-- ── STEP 1: PERSONAL ── -->
+        <div class="form-step active" id="formStep1">
+          <div class="fields-grid">
+            <div class="form-group full">
+              <label>Full Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" id="regName" class="form-control" placeholder="Enter your full name" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Email Address <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-envelope input-icon"></i>
+                <input type="email" id="regEmail" class="form-control" placeholder="yourmail@example.com" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Phone Number <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-phone input-icon"></i>
+                <input type="tel" id="regPhone" class="form-control" placeholder="01XXXXXXXXX" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>National NID <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-id-card input-icon"></i>
+                <input type="text" id="regNid" class="form-control" placeholder="10 or 13 digit NID" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-calendar input-icon"></i>
+                <input type="date" id="regDob" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-venus-mars input-icon"></i>
+                <select id="regGender" class="form-control">
+                  <option value="">Select gender</option>
+                  <option>Male</option><option>Female</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>City / Area <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-location-dot input-icon"></i>
+                <input type="text" id="regCity" class="form-control" placeholder="e.g. Mirpur 10, Dhaka" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Full Address</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-map-pin input-icon"></i>
+                <input type="text" id="regAddress" class="form-control" placeholder="Street, area, district">
+              </div>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button type="button" class="btn-next" onclick="nextStep(2)">
+              Next: Medical Info <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: MEDICAL ── -->
+        <div class="form-step" id="formStep2">
+          <div class="fields-grid">
+            <div class="form-group">
+              <label>Blood Group <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-droplet input-icon"></i>
+                <select id="regBlood" class="form-control" required>
+                  <option value="">Select Blood Group</option>
+                  <option>A+</option><option>A-</option>
+                  <option>B+</option><option>B-</option>
+                  <option>O+</option><option>O-</option>
+                  <option>AB+</option><option>AB-</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Weight (kg)</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-weight-scale input-icon"></i>
+                <input type="number" id="regWeight" class="form-control" placeholder="e.g. 65" min="45" max="200">
+              </div>
+            </div>
+            <div class="form-group" id="fieldLastDonation">
+              <label>Last Donation Date</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-calendar-check input-icon"></i>
+                <input type="date" id="regLastDonation" class="form-control">
+              </div>
+            </div>
+            <div class="form-group" id="fieldHospital" style="display:none;">
+              <label>Hospital / Location</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-hospital input-icon"></i>
+                <input type="text" id="regHospital" class="form-control" placeholder="DMCH, Birdem...">
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Medical Notes / Health Conditions</label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-notes-medical input-icon" style="top:17px;transform:none;"></i>
+                <textarea id="regNotes" class="form-control" placeholder="List any medical conditions, medications, allergies, or disease history..." style="padding-left:44px;min-height:90px;resize:none;"></textarea>
+              </div>
+            </div>
+            <div class="form-group full">
+              <div class="section-divider">
+                <div class="section-divider-line"></div>
+                <span class="section-divider-text">Availability</span>
+                <div class="section-divider-line"></div>
+              </div>
+              <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 16px;background:var(--red-glow2);border:1px solid var(--border);border-radius:12px;">
+                <input type="checkbox" id="regAvailable" checked style="width:18px;height:18px;accent-color:var(--red);flex-shrink:0;">
+                <div>
+                  <span style="font-size:.88rem;font-weight:700;color:var(--text);display:block;" id="availLabel">I am currently available to donate blood</span>
+                  <span style="font-size:.75rem;color:var(--text2);">You can change this anytime from your profile</span>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button type="button" class="btn-back" onclick="prevStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="button" class="btn-next" onclick="nextStep(3)">
+              Next: Security <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: SECURITY ── -->
+        <div class="form-step" id="formStep3">
+          <div class="fields-grid">
+            <div class="form-group">
+              <label>Password <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="regPassword" class="form-control" placeholder="Create a strong password" required oninput="checkStrength(this.value)">
+                <span class="pw-toggle" onclick="togglePw('regPassword',this)"><i class="fa-solid fa-eye-slash"></i></span>
+              </div>
+              <div class="pw-strength">
+                <div class="pw-strength-bar"><div class="pw-strength-fill" id="strengthFill"></div></div>
+                <div class="pw-strength-label" id="strengthLabel">Enter a password</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password <span class="req">*</span></label>
+              <div class="input-wrap">
+                <i class="fa-solid fa-key input-icon"></i>
+                <input type="password" id="regConfirm" class="form-control" placeholder="Re-enter your password" required>
+                <span class="pw-toggle" onclick="togglePw('regConfirm',this)"><i class="fa-solid fa-eye-slash"></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="terms-row" style="margin-top:4px;">
+            <input type="checkbox" id="agreeTerms" required>
+            <span>I agree to VitalDrop's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I confirm that my information is accurate and I am at least 18 years old.</span>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn-back" onclick="prevStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <i class="fa-solid fa-heart-pulse"></i> REGISTER NOW
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div><!-- end card-body -->
+
+    <div class="card-footer">
+      Already have an account? <a href="login.html">Sign in here</a>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){const h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');localStorage.setItem('vd-theme',h.getAttribute('data-theme'));}
+(function(){const s=localStorage.getItem('vd-theme');if(s)document.documentElement.setAttribute('data-theme',s);})();
+
+/* ── COMPAT MAP ── */
+const COMPAT={
+  'A+': {to:['A+','AB+'],from:['A+','A-','O+','O-']},
+  'A-': {to:['A+','A-','AB+','AB-'],from:['A-','O-']},
+  'B+': {to:['B+','AB+'],from:['B+','B-','O+','O-']},
+  'B-': {to:['B+','B-','AB+','AB-'],from:['B-','O-']},
+  'AB+':{to:['AB+'],from:['A+','A-','B+','B-','AB+','AB-','O+','O-']},
+  'AB-':{to:['AB+','AB-'],from:['A-','B-','AB-','O-']},
+  'O+': {to:['A+','B+','O+','AB+'],from:['O+','O-']},
+  'O-': {to:['A+','A-','B+','B-','AB+','AB-','O+','O-'],from:['O-']},
+};
+
+let profiles = [];
+let currentTab = 'all';
+let editId = null;
+let avatarData = '', nidFile = null;
+
+const initials = n => n ? n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) : '?';
+
+/* ── TOAST ── */
+function toast(msg,type='success'){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<i class="fa-solid ${icons[type]}"></i>${msg}`;
+  document.getElementById('toastBox').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='.4s';},2800);
+  setTimeout(()=>el.remove(),3300);
+}
+
+/* ── LOAD STATS ── */
+async function loadStats(){
+  try{
+    const res  = await fetch('/registry/stats');
+    const data = await res.json();
+    document.getElementById('statTotal').textContent     = data.total     || 0;
+    document.getElementById('statDonors').textContent    = data.donors    || 0;
+    document.getElementById('statReceivers').textContent = data.receivers || 0;
+    document.getElementById('statAvail').textContent     = data.available || 0;
+  } catch(err){ console.error('Stats error:', err); }
+}
+
+/* ── LOAD PROFILES ── */
+async function loadProfiles(){
+  try{
+    const res  = await fetch('/registry/profiles');
+    const data = await res.json();
+    profiles   = data.profiles || [];
+    renderCards();
+  } catch(err){
+    console.error('Profiles error:', err);
+    renderCards();
+  }
+}
+
+/* ── RENDER ── */
+function renderCards(){
+  const q   = document.getElementById('searchInput').value.toLowerCase();
+  const bg  = document.getElementById('filterBG').value;
+  const div = document.getElementById('filterDiv').value;
+
+  const filtered = profiles.filter(p => {
+    if(currentTab !== 'all' && p.role !== currentTab) return false;
+    if(bg  && p.bloodGroup !== bg)   return false;
+    if(div && p.division  !== div)   return false;
+    if(q && !(
+      (p.fullName||'').toLowerCase().includes(q) ||
+      (p.phone||'').includes(q) ||
+      (p.district||'').toLowerCase().includes(q) ||
+      (p.bloodGroup||'').toLowerCase().includes(q)
+    )) return false;
+    return true;
+  });
+
+  const grid  = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('resultsCount').textContent = `${filtered.length} profile${filtered.length!==1?'s':''}`;
+  document.querySelector('.results-bar span:last-child').textContent = 'Live data from database';
+
+  if(!filtered.length){ grid.innerHTML=''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  grid.innerHTML = filtered.map(p => {
+    const cp    = COMPAT[p.bloodGroup] || {to:[],from:[]};
+    const avTag = p.role === 'donor'
+      ? (p.available ? '<span class="tag tag-avail">✓ Available</span>' : '')
+      : (p.available ? '<span class="tag tag-urgent">⚡ Urgent</span>'   : '');
+    const av = p.avatar
+      ? `<div class="avatar"><img src="${p.avatar}" alt="${p.fullName}"></div>`
+      : `<div class="avatar">${initials(p.fullName||'?')}</div>`;
+    const nidBadge = p.hasNid
+      ? `<span class="card-nid-badge"><i class="fa-solid fa-id-card" style="font-size:.65rem;"></i> NID Verified</span>` : '';
+    return `<div class="profile-card">
+      <div class="card-strip"></div>
+      <div class="card-body">
+        <div class="card-top">
+          ${av}
+          <div style="flex:1;min-width:0;">
+            <div class="card-name">${p.fullName||'—'}</div>
+            <div class="card-loc">${p.division||''}${p.district?' · '+p.district:''}</div>
+            <div class="card-tags">
+              <span class="tag tag-blood">${p.bloodGroup||'—'}</span>
+              <span class="tag ${p.role==='donor'?'tag-donor':'tag-receiver'}">${p.role==='donor'?'🩸 Donor':'🏥 Receiver'}</span>
+              ${avTag}
+            </div>
+            ${nidBadge}
+          </div>
+        </div>
+        <div class="card-info">
+          <div><span>📞</span>${p.phone||'—'}</div>
+          <div><span>🎂</span>${p.age?p.age+' yrs':'—'}</div>
+          <div style="grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span>✉️</span>${p.email||'—'}</div>
+          ${p.lastDonation?`<div style="grid-column:1/-1;"><span>🗓 Last: </span>${p.lastDonation}</div>`:''}
+          ${p.notes?`<div style="grid-column:1/-1;font-style:italic;opacity:.7;">"${p.notes.slice(0,60)}${p.notes.length>60?'…':''}"</div>`:''}
+        </div>
+        <div class="card-compat">
+          <div class="compat-title">Blood Compatibility</div>
+          <div class="compat-row"><span>Donates to:</span>${cp.to.map(b=>`<span class="compat-pill">${b}</span>`).join('')}</div>
+          <div class="compat-row"><span>Receives from:</span>${cp.from.map(b=>`<span class="compat-pill">${b}</span>`).join('')}</div>
+        </div>
+        <div class="card-actions">
+          <button class="act-btn" onclick="editProfile('${p.id||p._id}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+          <a href="tel:${p.phone}" class="act-btn contact"><i class="fa-solid fa-phone"></i> Call</a>
+          <button class="act-del" onclick="deleteProfile('${p.id||p._id}','${p.fullName||''}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── TABS ── */
+function switchTab(t){
+  currentTab = t;
+  ['all','donor','receiver'].forEach(id=>{
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  renderCards();
+}
+
+/* ── FILTERS ── */
+function clearFilters(){
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterBG').value    = '';
+  document.getElementById('filterDiv').value   = '';
+  renderCards();
+}
+
+/* ── MODAL ── */
+function openModal(p=null){
+  editId = p ? (p.id||p._id) : null;
+  avatarData = p ? (p.avatar||'') : '';
+  nidFile = null;
+  document.getElementById('modalTitle').textContent   = p ? 'Edit Profile' : 'New Profile';
+  document.getElementById('submitText').textContent   = p ? 'Update Profile' : 'Save Profile';
+  document.getElementById('fName').value      = p ? (p.fullName||'') : '';
+  document.getElementById('fEmail').value     = p ? (p.email||'')    : '';
+  document.getElementById('fPhone').value     = p ? (p.phone||'')    : '';
+  document.getElementById('fBG').value        = p ? (p.bloodGroup||'A+') : 'A+';
+  document.getElementById('fAge').value       = p ? (p.age||'')      : '';
+  document.getElementById('fDiv').value       = p ? (p.division||'Dhaka') : 'Dhaka';
+  document.getElementById('fDistrict').value  = p ? (p.district||'') : '';
+  document.getElementById('fLastDon').value   = p ? (p.lastDonation||'') : '';
+  document.getElementById('fNotes').value     = p ? (p.notes||'')    : '';
+  document.getElementById('fAvail').checked   = p ? (p.available!==false) : true;
+  selectRole(p ? (p.role||'donor') : 'donor');
+  updateAvatarUI();
+  document.getElementById('nidPreview').classList.add('hidden');
+  document.getElementById('nidBox').classList.remove('hidden');
+  if(p && p.hasNid){
+    document.getElementById('nidBox').classList.add('hidden');
+    document.getElementById('nidPreview').classList.remove('hidden');
+    document.getElementById('nidFileName').textContent = 'NID already uploaded ✓';
+    nidFile = 'existing';
+  }
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.add('hidden'); document.body.style.overflow=''; }
+function overlayClick(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+/* ── ROLE ── */
+function selectRole(r){
+  document.getElementById('fRole').value = r;
+  document.getElementById('roleD').className = 'role-opt'+(r==='donor'?' active-donor':'');
+  document.getElementById('roleR').className = 'role-opt'+(r==='receiver'?' active-receiver':'');
+  document.getElementById('lastDonRow').style.display = r==='donor' ? '' : 'none';
+  document.getElementById('toggleLabel').textContent = r==='donor' ? 'Available to donate' : 'Urgently needs blood';
+  document.getElementById('toggleSub').textContent   = r==='donor' ? 'Toggle if you can donate now' : 'Toggle if you need blood urgently';
+}
+
+/* ── AVATAR ── */
+function handleAvatar(e){
+  const f=e.target.files[0]; if(!f) return;
+  if(f.size>5*1024*1024){ toast('Image too large (max 5MB)','error'); return; }
+  const r=new FileReader();
+  r.onload=ev=>{ avatarData=ev.target.result; updateAvatarUI(); };
+  r.readAsDataURL(f);
+}
+function updateAvatarUI(){
+  const img=document.getElementById('avatarImg');
+  const icon=document.getElementById('avatarIcon');
+  if(avatarData){ img.src=avatarData; img.style.display='block'; icon.style.display='none'; }
+  else{ img.style.display='none'; img.src=''; icon.style.display=''; }
+}
+function removeAvatar(){ avatarData=''; updateAvatarUI(); }
+
+/* ── NID ── */
+function handleNid(e){ const f=e.target.files[0]; if(!f) return; setNid(f); }
+function nidDrag(e,on){ e.preventDefault(); document.getElementById('nidBox').classList.toggle('drag',on); }
+function nidDrop(e){ e.preventDefault(); nidDrag(e,false); const f=e.dataTransfer.files[0]; if(f) setNid(f); }
+function setNid(f){
+  if(f.size>5*1024*1024){ toast('NID file too large','error'); return; }
+  const r=new FileReader();
+  r.onload=ev=>{ nidFile=ev.target.result; };
+  r.readAsDataURL(f);
+  document.getElementById('nidBox').classList.add('hidden');
+  document.getElementById('nidPreview').classList.remove('hidden');
+  document.getElementById('nidFileName').textContent=f.name;
+}
+function removeNid(){
+  nidFile=null;
+  document.getElementById('nidFile').value='';
+  document.getElementById('nidPreview').classList.add('hidden');
+  document.getElementById('nidBox').classList.remove('hidden');
+}
+
+/* ── SAVE PROFILE ── */
+async function saveProfile(){
+  const name  = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  if(!name||!phone){ toast('Name and phone are required','error'); return; }
+  if(!nidFile){ toast('Please upload your NID card','error'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitText').textContent = 'Saving…';
+
+  const payload = {
+    fullName:     name,
+    email:        document.getElementById('fEmail').value.trim(),
+    phone,
+    age:          document.getElementById('fAge').value,
+    bloodGroup:   document.getElementById('fBG').value,
+    role:         document.getElementById('fRole').value,
+    division:     document.getElementById('fDiv').value,
+    district:     document.getElementById('fDistrict').value.trim(),
+    available:    document.getElementById('fAvail').checked,
+    lastDonation: document.getElementById('fLastDon').value,
+    notes:        document.getElementById('fNotes').value.trim(),
+    avatar:       avatarData,
+    nidImage:     nidFile === 'existing' ? '' : (nidFile||''),
+  };
+
+  try{
+    const url    = editId ? `/registry/profile/${editId}` : '/registry/profile';
+    const method = editId ? 'PUT' : 'POST';
+    const res    = await fetch(url,{
+      method,
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(res.ok){
+      toast(editId ? 'Profile updated!' : 'Profile saved! Welcome to VitalDrop 🩸','success');
+      closeModal();
+      loadProfiles();
+      loadStats();
+    } else {
+      toast(data.error||'Save failed','error');
+    }
+  } catch(err){
+    toast('Server error','error');
+  }
+  btn.disabled = false;
+  document.getElementById('submitText').textContent = editId ? 'Update Profile' : 'Save Profile';
+}
+
+/* ── EDIT / DELETE ── */
+function editProfile(id){
+  const p = profiles.find(x=>(x.id||x._id)===id);
+  if(p) openModal(p);
+}
+async function deleteProfile(id, name){
+  if(!confirm(`Remove ${name} from registry?`)) return;
+  try{
+    const res = await fetch(`/registry/profile/${id}`,{method:'DELETE',credentials:'include'});
+    if(res.ok){ toast('Profile removed','info'); loadProfiles(); loadStats(); }
+    else toast('Failed to delete','error');
+  } catch(err){ toast('Server error','error'); }
+}
+
+/* ── INIT ── */
+// Fix navbar links
+document.querySelector('.navbar .logo').href = '/index';
+document.querySelectorAll('.nav-link').forEach(a=>{
+  if(a.textContent.trim()==='Home') a.href='/index';
+  if(a.textContent.trim()==='Sign In') a.href='/login';
+});
+
+loadStats();
+loadProfiles();
+</script>
+</body>
+</html>

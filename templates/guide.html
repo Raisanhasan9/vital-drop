@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blood Donation Guide — VitalDrop</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ══════════ THEME ══════════ */
+    :root { --transition: .35s ease; }
+
+    [data-theme="dark"] {
+      --bg:          #070101;
+      --bg2:         #0f0202;
+      --card:        rgba(20,4,4,0.88);
+      --border:      rgba(255,60,60,0.12);
+      --border2:     rgba(255,60,60,0.25);
+      --text:        #f0e8e8;
+      --text2:       #9a7878;
+      --text3:       #4a2828;
+      --nav-bg:      rgba(5,0,0,0.92);
+      --red:         #ff3333;
+      --red2:        #c0392b;
+      --red-glow:    rgba(255,50,50,0.14);
+      --green:       #00cc66;
+      --shadow:      0 20px 60px rgba(0,0,0,0.7);
+      --grid:        rgba(255,255,255,0.025);
+      --tag-critical: #ff3333;
+      --tag-urgent:   #ff8800;
+    }
+    [data-theme="light"] {
+      --bg:          #fff5f5;
+      --bg2:         #fff0f0;
+      --card:        rgba(255,255,255,0.95);
+      --border:      rgba(200,40,40,0.14);
+      --border2:     rgba(200,40,40,0.28);
+      --text:        #1a0808;
+      --text2:       #7a4444;
+      --text3:       #c09090;
+      --nav-bg:      rgba(255,248,248,0.95);
+      --red:         #c0392b;
+      --red2:        #a93226;
+      --red-glow:    rgba(192,57,43,0.1);
+      --green:       #16a34a;
+      --shadow:      0 20px 60px rgba(180,30,30,0.1);
+      --grid:        rgba(180,30,30,0.04);
+      --tag-critical: #dc2626;
+      --tag-urgent:   #ea580c;
+    }
+
+    /* ══════════ RESET ══════════ */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+      line-height: 1.7;
+    }
+
+    /* ══════════ BG ══════════ */
+    .bg-layer { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    .bg-grid {
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+    .bg-orb {
+      position:absolute; border-radius:50%; filter:blur(80px);
+      animation: orbFloat 14s ease-in-out infinite;
+    }
+    .orb1 { width:600px;height:600px;top:-200px;left:-200px; background:radial-gradient(circle, rgba(180,0,0,0.12) 0%,transparent 70%); }
+    .orb2 { width:400px;height:400px;bottom:-100px;right:-100px; background:radial-gradient(circle, rgba(180,0,0,0.09) 0%,transparent 70%); animation-delay:-7s; }
+    @keyframes orbFloat { 0%,100%{transform:translate(0,0);} 50%{transform:translate(25px,18px);} }
+
+    /* ══════════ NAVBAR ══════════ */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      height:64px;
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(18px);
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 0 40px;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .logo {
+      display:flex; align-items:center; gap:10px;
+      font-size:1.45rem; font-weight:800;
+      color: var(--red); letter-spacing:-.03em;
+      text-decoration:none;
+    }
+    .logo i { filter:drop-shadow(0 0 8px var(--red)); }
+    .nav-links { display:flex; align-items:center; gap:20px; }
+    .nav-link {
+      color:var(--text2); text-decoration:none;
+      font-size:.85rem; font-weight:600;
+      transition: color var(--transition);
+    }
+    .nav-link:hover { color:var(--text); }
+    .nav-link.active { color:var(--red); }
+
+    /* theme toggle */
+    .theme-toggle {
+      width:44px; height:24px;
+      background:var(--bg2);
+      border:1px solid var(--border2);
+      border-radius:24px;
+      cursor:pointer; position:relative;
+      transition: all var(--transition);
+    }
+    .theme-toggle::after {
+      content:''; position:absolute;
+      top:3px; left:3px;
+      width:16px; height:16px; border-radius:50%;
+      background:var(--red);
+      transition: transform var(--transition);
+      box-shadow:0 0 6px var(--red);
+    }
+    [data-theme="light"] .theme-toggle::after { transform:translateX(20px); }
+    .toggle-icon {
+      position:absolute; top:50%; transform:translateY(-50%);
+      font-size:.6rem; color:var(--text2); pointer-events:none;
+    }
+    .toggle-icon.moon { left:5px; }
+    .toggle-icon.sun  { right:5px; }
+
+    /* ══════════ HERO ══════════ */
+    .hero {
+      position:relative; z-index:1;
+      min-height:100vh;
+      display:grid; grid-template-columns:1fr 1fr;
+      align-items:center;
+      gap:0;
+      padding-top:64px;
+      overflow:hidden;
+    }
+    .hero-left {
+      padding:80px 60px 80px 80px;
+      display:flex; flex-direction:column; gap:28px;
+    }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:10px;
+      background: var(--red-glow);
+      border:1px solid var(--border2);
+      border-radius:50px; padding:8px 18px;
+      font-size:.78rem; font-weight:700;
+      color:var(--red); letter-spacing:.08em;
+      width:fit-content;
+    }
+    .hero-badge span {
+      width:8px;height:8px; border-radius:50%;
+      background:var(--red);
+      animation:blink 1.4s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+    .hero h1 {
+      font-size:3.6rem; font-weight:800;
+      line-height:1.1; letter-spacing:-.04em;
+    }
+    .hero h1 em {
+      font-style:normal; color:var(--red);
+      display:block;
+    }
+    .hero-sub {
+      font-size:1.05rem; color:var(--text2); max-width:480px;
+      line-height:1.7;
+    }
+    .hero-cta {
+      display:flex; gap:14px; flex-wrap:wrap;
+    }
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:10px;
+      background:linear-gradient(135deg, var(--red2), var(--red));
+      color:white; border:none;
+      padding:15px 34px; border-radius:50px;
+      font-size:.9rem; font-weight:700; font-family:'Sora',sans-serif;
+      cursor:pointer; text-decoration:none;
+      transition:all var(--transition);
+      box-shadow:0 8px 28px rgba(200,0,0,0.28);
+      position:relative; overflow:hidden;
+    }
+    .btn-primary::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);
+      transform:translateX(-100%); transition:.6s;
+    }
+    .btn-primary:hover::before { transform:translateX(100%); }
+    .btn-primary:hover { transform:translateY(-3px); box-shadow:0 16px 40px rgba(200,0,0,0.38); }
+    .btn-outline {
+      display:inline-flex; align-items:center; gap:10px;
+      background:transparent;
+      color:var(--text2); border:1px solid var(--border2);
+      padding:15px 28px; border-radius:50px;
+      font-size:.9rem; font-weight:600; font-family:'Sora',sans-serif;
+      cursor:pointer; text-decoration:none;
+      transition:all var(--transition);
+    }
+    .btn-outline:hover { color:var(--text); border-color:var(--red); }
+
+    .hero-stats {
+      display:flex; gap:36px; padding-top:16px;
+      border-top:1px solid var(--border);
+    }
+    .h-stat-val { font-size:1.8rem; font-weight:800; color:var(--red); }
+    .h-stat-lbl { font-size:.7rem; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.08em; margin-top:2px; }
+
+    /* hero right image stack */
+    .hero-right {
+      position:relative; height:100vh;
+      overflow:hidden;
+    }
+    .hero-img-main {
+      width:100%; height:100%;
+      object-fit:cover;
+      filter:brightness(.55);
+    }
+    [data-theme="light"] .hero-img-main { filter:brightness(.75); }
+    .hero-img-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(90deg, var(--bg) 0%, transparent 35%);
+    }
+    .hero-img-card {
+      position:absolute; bottom:60px; right:30px;
+      background:var(--card); border:1px solid var(--border2);
+      border-radius:20px; padding:20px 26px;
+      backdrop-filter:blur(16px);
+      display:flex; align-items:center; gap:14px;
+      box-shadow:0 20px 50px rgba(0,0,0,0.4);
+      min-width:220px;
+    }
+    .hero-card-icon {
+      width:48px; height:48px; border-radius:14px;
+      background:var(--red-glow); border:1px solid var(--border2);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--red); font-size:1.4rem;
+    }
+    .hero-card-val { font-size:1.5rem; font-weight:800; color:var(--text); }
+    .hero-card-lbl { font-size:.75rem; color:var(--text2); font-weight:600; }
+
+    /* ══════════ SECTION ══════════ */
+    .section { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:100px 40px; }
+    .section-label {
+      display:inline-flex; align-items:center; gap:8px;
+      font-family:'Space Mono',monospace;
+      font-size:.72rem; color:var(--red); letter-spacing:.14em; text-transform:uppercase;
+      margin-bottom:14px;
+    }
+    .section-label::before { content:''; width:24px; height:2px; background:var(--red); }
+    .section-title {
+      font-size:2.6rem; font-weight:800; letter-spacing:-.03em;
+      line-height:1.15; margin-bottom:16px;
+    }
+    .section-sub { font-size:1rem; color:var(--text2); max-width:560px; margin-bottom:56px; }
+
+    /* WHY CARDS */
+    .why-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .why-card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:24px; padding:36px 30px;
+      backdrop-filter:blur(14px);
+      position:relative; overflow:hidden;
+      transition:all var(--transition);
+    }
+    .why-card::after {
+      content:''; position:absolute;
+      bottom:0; left:0; right:0; height:3px;
+      background:linear-gradient(90deg, var(--red2), var(--red));
+      transform:scaleX(0); transition:transform var(--transition);
+      transform-origin:left;
+    }
+    .why-card:hover { transform:translateY(-8px); border-color:var(--border2); box-shadow:var(--shadow); }
+    .why-card:hover::after { transform:scaleX(1); }
+    .why-icon {
+      width:56px; height:56px; border-radius:16px;
+      background:var(--red-glow); border:1px solid var(--border2);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--red); font-size:1.4rem; margin-bottom:20px;
+    }
+    .why-card h3 { font-size:1.1rem; font-weight:700; margin-bottom:10px; }
+    .why-card p { font-size:.9rem; color:var(--text2); line-height:1.65; }
+
+    /* IMAGE BAND */
+    .img-band {
+      position:relative; z-index:1;
+      display:grid; grid-template-columns:1fr 1fr 1fr;
+      gap:16px; padding:0 40px;
+      max-width:1200px; margin:0 auto;
+    }
+    .img-band-item {
+      border-radius:20px; overflow:hidden;
+      position:relative; aspect-ratio:4/3;
+    }
+    .img-band-item img { width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
+    .img-band-item:hover img { transform:scale(1.06); }
+    .img-band-item .caption {
+      position:absolute; bottom:0; left:0; right:0;
+      background:linear-gradient(to top, rgba(0,0,0,.8), transparent);
+      padding:20px 16px 14px;
+      font-size:.8rem; font-weight:600; color:#fff;
+      letter-spacing:.04em;
+    }
+    .img-band-item:first-child { grid-row:span 2; aspect-ratio:auto; }
+
+    /* ELIGIBILITY */
+    .elig-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+    .elig-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:24px; padding:36px;
+      backdrop-filter:blur(14px);
+    }
+    .elig-title {
+      display:flex; align-items:center; gap:12px;
+      font-size:1.05rem; font-weight:700; margin-bottom:24px;
+    }
+    .elig-title i { font-size:1.2rem; }
+    .elig-can .elig-title i { color:var(--green); }
+    .elig-cant .elig-title i { color:var(--red); }
+    .elig-list { list-style:none; }
+    .elig-list li {
+      display:flex; align-items:flex-start; gap:12px;
+      font-size:.9rem; color:var(--text2);
+      padding:10px 0; border-bottom:1px solid var(--border);
+    }
+    .elig-list li:last-child { border-bottom:none; }
+    .elig-list li i { margin-top:3px; font-size:.8rem; flex-shrink:0; }
+    .elig-can .elig-list li i { color:var(--green); }
+    .elig-cant .elig-list li i { color:var(--red); }
+    .elig-note {
+      grid-column: 1/-1;
+      background:var(--red-glow); border:1px solid var(--border2);
+      border-radius:16px; padding:20px 24px;
+      display:flex; gap:14px; align-items:flex-start;
+      font-size:.88rem; color:var(--text2);
+    }
+    .elig-note i { color:var(--red); font-size:1.1rem; flex-shrink:0; margin-top:2px; }
+
+    /* PROCESS STEPS */
+    .steps-track {
+      display:grid; grid-template-columns:repeat(5,1fr);
+      gap:0; position:relative;
+    }
+    .steps-track::before {
+      content:''; position:absolute;
+      top:36px; left:calc(10% + 20px); right:calc(10% + 20px);
+      height:2px; background:linear-gradient(90deg, var(--red), var(--red2));
+      z-index:0; opacity:.4;
+    }
+    .step-item {
+      display:flex; flex-direction:column; align-items:center;
+      text-align:center; gap:16px; padding:0 12px;
+      position:relative; z-index:1;
+    }
+    .step-circle {
+      width:72px; height:72px; border-radius:50%;
+      background:var(--card); border:2px solid var(--border2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; color:var(--red);
+      box-shadow:0 8px 24px rgba(0,0,0,.3);
+      transition:all var(--transition);
+    }
+    .step-item:hover .step-circle {
+      background:var(--red-glow); border-color:var(--red);
+      transform:scale(1.08);
+    }
+    .step-num {
+      font-family:'Space Mono',monospace;
+      font-size:.65rem; color:var(--red); letter-spacing:.1em;
+    }
+    .step-name { font-size:.9rem; font-weight:700; }
+    .step-desc { font-size:.78rem; color:var(--text2); line-height:1.6; }
+
+    /* BLOOD TYPE TABLE */
+    .blood-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; }
+    .blood-table-wrap {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:24px; overflow:hidden; backdrop-filter:blur(14px);
+    }
+    table { width:100%; border-collapse:collapse; }
+    thead th {
+      background:rgba(255,51,51,0.12);
+      color:var(--red); font-size:.78rem; font-weight:700;
+      letter-spacing:.07em; text-transform:uppercase;
+      padding:14px 20px;
+    }
+    tbody tr { border-bottom:1px solid var(--border); transition:background var(--transition); }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--red-glow); }
+    td { padding:14px 20px; font-size:.9rem; color:var(--text2); }
+    td:first-child { font-weight:800; color:var(--red); font-family:'Space Mono',monospace; font-size:1rem; }
+    .universal-donor td { color:var(--green) !important; }
+    .universal-recipient td:last-child { color:#f87171; }
+
+    .blood-info {
+      display:flex; flex-direction:column; gap:16px;
+    }
+    .blood-info-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:20px; padding:24px;
+      backdrop-filter:blur(14px);
+    }
+    .blood-info-card h4 {
+      font-size:.9rem; font-weight:700;
+      color:var(--red); margin-bottom:10px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .blood-info-card p { font-size:.85rem; color:var(--text2); line-height:1.65; }
+    .blood-types-pills {
+      display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;
+    }
+    .pill {
+      background:var(--red-glow); border:1px solid var(--border2);
+      border-radius:50px; padding:5px 14px;
+      font-size:.75rem; font-weight:700; color:var(--red);
+      font-family:'Space Mono',monospace;
+    }
+
+    /* PREP */
+    .prep-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .prep-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:24px; padding:36px;
+      backdrop-filter:blur(14px);
+    }
+    .prep-card h3 {
+      font-size:1.05rem; font-weight:700; color:var(--red);
+      margin-bottom:24px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .prep-list { list-style:none; }
+    .prep-list li {
+      display:flex; align-items:flex-start; gap:12px;
+      font-size:.88rem; color:var(--text2);
+      padding:10px 0; border-bottom:1px solid var(--border);
+    }
+    .prep-list li:last-child { border-bottom:none; }
+    .prep-list li i { color:var(--red); margin-top:3px; font-size:.85rem; flex-shrink:0; }
+
+    /* CTA BAND */
+    .cta-band {
+      position:relative; z-index:1;
+      margin:0 40px 100px;
+      border-radius:32px; overflow:hidden;
+      min-height:320px;
+      display:flex; align-items:center;
+    }
+    .cta-img {
+      position:absolute; inset:0;
+      width:100%; height:100%; object-fit:cover;
+      filter:brightness(.35);
+    }
+    [data-theme="light"] .cta-img { filter:brightness(.5); }
+    .cta-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(135deg, rgba(150,0,0,.6), rgba(0,0,0,.4));
+    }
+    .cta-content {
+      position:relative; z-index:2;
+      padding:60px 80px;
+      max-width:700px;
+    }
+    .cta-content h2 {
+      font-size:2.4rem; font-weight:800; color:#fff;
+      margin-bottom:14px; letter-spacing:-.03em;
+    }
+    .cta-content p { color:rgba(255,220,220,.75); margin-bottom:32px; font-size:.95rem; }
+
+    /* FOOTER */
+    footer {
+      position:relative; z-index:1;
+      border-top:1px solid var(--border);
+      padding:40px; text-align:center;
+      font-size:.82rem; color:var(--text2);
+    }
+    footer strong { color:var(--red); }
+
+    /* ══════════ RESPONSIVE ══════════ */
+    @media(max-width:1000px){
+      .hero { grid-template-columns:1fr; }
+      .hero-right { display:none; }
+      .hero-left { padding:100px 24px 60px; }
+      .hero h1 { font-size:2.6rem; }
+      .why-grid { grid-template-columns:1fr 1fr; }
+      .steps-track { grid-template-columns:1fr 1fr; gap:24px; }
+      .steps-track::before { display:none; }
+      .blood-grid, .elig-grid, .prep-grid { grid-template-columns:1fr; }
+      .img-band { grid-template-columns:1fr 1fr; }
+      .img-band-item:first-child { grid-row:auto; aspect-ratio:4/3; }
+      .navbar { padding:0 20px; }
+      .cta-content { padding:40px 30px; }
+      .section { padding:70px 20px; }
+    }
+    @media(max-width:600px){
+      .why-grid { grid-template-columns:1fr; }
+      .img-band { grid-template-columns:1fr; }
+      .hero h1 { font-size:2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg-layer">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <i class="fa-solid fa-droplet"></i>VitalDrop
+  </a>
+  <div class="nav-links">
+    <a href="index.html"         class="nav-link">Home</a>
+    <a href="emergency.html"     class="nav-link">Emergency Feed</a>
+    <a href="guide.html"         class="nav-link active">Guide</a>
+    <a href="login.html"         class="nav-link">Sign In</a>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+      <i class="fa-solid fa-moon toggle-icon moon"></i>
+      <i class="fa-solid fa-sun  toggle-icon sun"></i>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span></span>
+      Bangladesh Blood Donation Network
+    </div>
+    <h1>Your Complete<em>Donation Guide</em></h1>
+    <p class="hero-sub">Everything you need to know before, during, and after donating blood — so your gift saves the most lives possible.</p>
+    <div class="hero-cta">
+      <a href="#eligibility" class="btn-primary"><i class="fa-solid fa-user-check"></i> Check Eligibility</a>
+      <a href="#process"     class="btn-outline"><i class="fa-solid fa-list-ol"></i> View Process</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="h-stat-val">3</div><div class="h-stat-lbl">Lives per donation</div></div>
+      <div><div class="h-stat-val">10<span style="font-size:1.1rem">min</span></div><div class="h-stat-lbl">Collection time</div></div>
+      <div><div class="h-stat-val">48<span style="font-size:1.1rem">hr</span></div><div class="h-stat-lbl">Volume restored</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img class="hero-img-main" src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=900&auto=format&fit=crop" alt="Blood donation"/>
+    <div class="hero-img-overlay"></div>
+    <div class="hero-img-card">
+      <div class="hero-card-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      <div>
+        <div class="hero-card-val">36,000+</div>
+        <div class="hero-card-lbl">Lives saved this year</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WHY DONATE ══ -->
+<section class="section">
+  <div class="section-label">Why It Matters</div>
+  <h2 class="section-title">Every Drop Has<br>a Purpose</h2>
+  <p class="section-sub">Your 10 minutes can define someone else's lifetime. Here's why donation matters beyond the moment.</p>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-clock"></i></div>
+      <h3>10–15 Minutes</h3>
+      <p>The entire donation process takes less time than your lunch break, yet its impact lasts a lifetime for the recipient.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-stethoscope"></i></div>
+      <h3>Free Health Screening</h3>
+      <p>Every donor receives a complimentary mini health check — hemoglobin, blood pressure, and pulse — at no cost.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-rotate"></i></div>
+      <h3>Body Recovers Fast</h3>
+      <p>Blood plasma is replenished within 48 hours. Your red cells are fully restored in 4–6 weeks — the body is remarkable.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-heart"></i></div>
+      <h3>Cardiovascular Benefits</h3>
+      <p>Regular donation may reduce iron overload and lower your long-term risk of heart disease and stroke.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-users"></i></div>
+      <h3>Community Impact</h3>
+      <p>In Bangladesh, blood shortages peak during accidents and surgical emergencies. Local donors make the critical difference.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-star"></i></div>
+      <h3>Donor Recognition</h3>
+      <p>VitalDrop celebrates regular donors with badges, certificates, and a priority card for when your family needs blood.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ IMAGE BAND ══ -->
+<div class="img-band">
+  <div class="img-band-item">
+    <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=700&auto=format&fit=crop" alt="Medical professional"/>
+    <div class="caption"><i class="fa-solid fa-circle" style="color:#22c55e;font-size:.45rem;margin-right:5px;"></i>Certified Medical Team</div>
+  </div>
+  <div class="img-band-item">
+    <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?w=700&auto=format&fit=crop" alt="Blood donation"/>
+    <div class="caption"><i class="fa-solid fa-droplet" style="color:#ff3333;font-size:.7rem;margin-right:5px;"></i>Safe Collection Process</div>
+  </div>
+  <div class="img-band-item">
+    <img src="https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=700&auto=format&fit=crop" alt="Blood lab"/>
+    <div class="caption"><i class="fa-solid fa-flask" style="color:#60a5fa;font-size:.7rem;margin-right:5px;"></i>Rigorous Lab Testing</div>
+  </div>
+</div>
+
+<!-- ══ ELIGIBILITY ══ -->
+<section class="section" id="eligibility">
+  <div class="section-label">Who Can Donate</div>
+  <h2 class="section-title">Eligibility Criteria</h2>
+  <p class="section-sub">VitalDrop follows WHO and Bangladesh DGDA guidelines to ensure safety for donors and recipients alike.</p>
+  <div class="elig-grid">
+    <div class="elig-card elig-can">
+      <div class="elig-title"><i class="fa-solid fa-circle-check"></i> You Can Donate If</div>
+      <ul class="elig-list">
+        <li><i class="fa-solid fa-check"></i> Age between <strong>&nbsp;18 and 65 years</strong></li>
+        <li><i class="fa-solid fa-check"></i> Weight <strong>&nbsp;50 kg (110 lbs)</strong> or above</li>
+        <li><i class="fa-solid fa-check"></i> Hemoglobin ≥ 12.5 g/dL (women) · ≥ 13.0 g/dL (men)</li>
+        <li><i class="fa-solid fa-check"></i> Generally healthy with no active fever or infection</li>
+        <li><i class="fa-solid fa-check"></i> At least <strong>&nbsp;3 months</strong> since your last whole-blood donation</li>
+        <li><i class="fa-solid fa-check"></i> No high-risk behavior in the past 3–12 months</li>
+      </ul>
+    </div>
+    <div class="elig-card elig-cant">
+      <div class="elig-title"><i class="fa-solid fa-circle-xmark"></i> You Cannot Donate If</div>
+      <ul class="elig-list">
+        <li><i class="fa-solid fa-xmark"></i> Under 18 or over 65 years old</li>
+        <li><i class="fa-solid fa-xmark"></i> Weight is below 50 kg</li>
+        <li><i class="fa-solid fa-xmark"></i> Currently pregnant or breastfeeding (within 6 months)</li>
+        <li><i class="fa-solid fa-xmark"></i> Positive for HIV, Hepatitis B/C, or Syphilis</li>
+        <li><i class="fa-solid fa-xmark"></i> History of heart disease, cancer, or chronic kidney disease</li>
+        <li><i class="fa-solid fa-xmark"></i> Recent tattoo, piercing, or acupuncture (within 6 months)</li>
+        <li><i class="fa-solid fa-xmark"></i> Active cold, flu, or any infection</li>
+        <li><i class="fa-solid fa-xmark"></i> On certain medications — consult a doctor first</li>
+      </ul>
+    </div>
+    <div class="elig-note">
+      <i class="fa-solid fa-circle-info"></i>
+      <span><strong style="color:var(--red)">Bangladesh Note:</strong> All donors receive a free confidential screening — hemoglobin, blood pressure, and medical history — before donation. Final eligibility is confirmed by the medical officer on duty.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROCESS ══ -->
+<section class="section" id="process">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">5 Simple Steps to<br>Saving a Life</h2>
+  <p class="section-sub">From the moment you walk in to the moment you leave, you're in expert hands.</p>
+  <div class="steps-track">
+    <div class="step-item">
+      <div class="step-num">STEP 01</div>
+      <div class="step-circle"><i class="fa-solid fa-file-lines"></i></div>
+      <div class="step-name">Registration</div>
+      <div class="step-desc">Fill a confidential medical history form and provide consent.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">STEP 02</div>
+      <div class="step-circle"><i class="fa-solid fa-stethoscope"></i></div>
+      <div class="step-name">Screening</div>
+      <div class="step-desc">A nurse checks vitals, hemoglobin, and blood pressure.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">STEP 03</div>
+      <div class="step-circle"><i class="fa-solid fa-droplet"></i></div>
+      <div class="step-name">Donation</div>
+      <div class="step-desc">350–450 ml collected in 8–12 minutes via sterile equipment.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">STEP 04</div>
+      <div class="step-circle"><i class="fa-solid fa-mug-hot"></i></div>
+      <div class="step-name">Post-Care</div>
+      <div class="step-desc">Rest 10–15 min; enjoy snacks and juice provided at the center.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">STEP 05</div>
+      <div class="step-circle"><i class="fa-solid fa-person-walking"></i></div>
+      <div class="step-name">Recovery</div>
+      <div class="step-desc">Resume normal life — stay hydrated and avoid heavy exertion for 24 hrs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BLOOD TYPES ══ -->
+<section class="section" id="bloodtypes">
+  <div class="section-label">Compatibility</div>
+  <h2 class="section-title">Blood Type Guide</h2>
+  <p class="section-sub">Knowing your blood type helps coordinate faster emergency responses across Bangladesh.</p>
+  <div class="blood-grid">
+    <div class="blood-table-wrap">
+      <table>
+        <thead>
+          <tr><th>Blood Group</th><th>Can Donate To</th></tr>
+        </thead>
+        <tbody>
+          <tr class="universal-donor"><td>O−</td><td><i class="fa-solid fa-star" style="color:var(--green);font-size:.7rem;margin-right:6px;"></i>Everyone (Universal Donor)</td></tr>
+          <tr><td>O+</td><td>O+, A+, B+, AB+</td></tr>
+          <tr><td>A−</td><td>A−, A+, AB−, AB+</td></tr>
+          <tr><td>A+</td><td>A+, AB+</td></tr>
+          <tr><td>B−</td><td>B−, B+, AB−, AB+</td></tr>
+          <tr><td>B+</td><td>B+, AB+</td></tr>
+          <tr><td>AB−</td><td>AB−, AB+</td></tr>
+          <tr class="universal-recipient"><td>AB+</td><td>AB+ Only (Universal Recipient)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="blood-info">
+      <div class="blood-info-card">
+        <h4><i class="fa-solid fa-circle-info"></i> Rh Factor Explained</h4>
+        <p>The Rh factor is a protein on red blood cells. Rh− blood is safe for both Rh+ and Rh− patients. Rh+ blood should only go to Rh+ patients — making O− donations especially critical in emergencies.</p>
+      </div>
+      <div class="blood-info-card">
+        <h4><i class="fa-solid fa-triangle-exclamation"></i> Critical Blood Types in BD</h4>
+        <p>O− and B+ are the most urgently needed across Bangladesh's hospitals. AB− is the rarest blood type nationally.</p>
+        <div class="blood-types-pills">
+          <span class="pill">O−</span><span class="pill">O+</span><span class="pill">B+</span><span class="pill">AB−</span>
+        </div>
+      </div>
+      <div class="blood-info-card">
+        <h4><i class="fa-solid fa-flask"></i> Plasma Donation</h4>
+        <p>AB+ donors are universal plasma donors — their plasma can help any patient regardless of blood type, making them doubly valuable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PREP ══ -->
+<section class="section" id="prep">
+  <div class="section-label">Be Prepared</div>
+  <h2 class="section-title">Before & After<br>Guidelines</h2>
+  <p class="section-sub">Small preparations make a big difference to your experience and recovery.</p>
+  <div class="prep-grid">
+    <div class="prep-card">
+      <h3><i class="fa-solid fa-calendar-check"></i> Before Donation</h3>
+      <ul class="prep-list">
+        <li><i class="fa-solid fa-utensils"></i> Eat a nutritious meal 2–3 hours before</li>
+        <li><i class="fa-solid fa-droplet"></i> Drink at least 500 ml of water beforehand</li>
+        <li><i class="fa-solid fa-ban"></i> Avoid fatty foods, alcohol, and caffeine</li>
+        <li><i class="fa-solid fa-moon"></i> Get at least 7 hours of sleep the night before</li>
+        <li><i class="fa-solid fa-id-card"></i> Bring a valid photo ID (NID / passport)</li>
+        <li><i class="fa-solid fa-shirt"></i> Wear comfortable clothing with easy sleeve access</li>
+      </ul>
+    </div>
+    <div class="prep-card">
+      <h3><i class="fa-solid fa-heart-pulse"></i> After Donation</h3>
+      <ul class="prep-list">
+        <li><i class="fa-solid fa-couch"></i> Rest 10–15 minutes at the center — don't rush</li>
+        <li><i class="fa-solid fa-glass-water"></i> Drink extra fluids for the next 24–48 hours</li>
+        <li><i class="fa-solid fa-dumbbell"></i> Avoid strenuous exercise or heavy lifting for 24 hours</li>
+        <li><i class="fa-solid fa-apple-whole"></i> Eat iron-rich foods: spinach, lentils, red meat, dates</li>
+        <li><i class="fa-solid fa-ban"></i> Avoid alcohol for at least 24 hours post-donation</li>
+        <li><i class="fa-solid fa-circle-exclamation"></i> If you feel faint or unwell, contact us immediately</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<div class="cta-band">
+  <img class="cta-img" src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=1400&auto=format&fit=crop" alt="Donate blood"/>
+  <div class="cta-overlay"></div>
+  <div class="cta-content">
+    <h2>Ready to Save a Life?</h2>
+    <p>Register today and become part of Bangladesh's largest voluntary blood donor network. One decision. Three lives.</p>
+    <a href="register.html" class="btn-primary"><i class="fa-solid fa-hand-holding-heart"></i> Register to Donate Now</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>VitalDrop</strong> Bangladesh &nbsp;·&nbsp; Every Drop Counts &nbsp;·&nbsp; Together We Save Lives
+</footer>
+
+<script>
+  function toggleTheme(){
+    const html = document.documentElement;
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('vd-theme', next);
+  }
+  (function(){
+    const s = localStorage.getItem('vd-theme');
+    if(s) document.documentElement.setAttribute('data-theme', s);
+  })();
+</script>
+</body>
+</html>
