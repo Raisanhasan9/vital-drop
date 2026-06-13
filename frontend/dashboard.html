@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VitalDrop — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+
+/* ═══════════════════════════════════════════════════
+   TOKENS — MATCHES INDEX.HTML EXACTLY
+═══════════════════════════════════════════════════ */
+:root { --t:.4s cubic-bezier(.22,1,.36,1); }
+
+[data-theme="dark"] {
+  --bg:        #08000a;
+  --bg2:       #0f000f;
+  --surface:   rgba(20,0,20,0.7);
+  --border:    rgba(220,60,80,0.14);
+  --border2:   rgba(220,60,80,0.28);
+  --text:      #f5eef5;
+  --text2:     #9e7fa0;
+  --text3:     #5a3a5c;
+  --red:       #e8324a;
+  --red2:      #b01832;
+  --red-soft:  rgba(232,50,74,0.12);
+  --red-glow:  rgba(232,50,74,0.22);
+  --nav-bg:    rgba(8,0,10,0.88);
+  --card-bg:   rgba(15,0,15,0.72);
+  --card-bg2:  rgba(22,2,22,0.85);
+  --grid:      rgba(255,255,255,0.025);
+  --orb1:      rgba(180,0,60,0.18);
+  --orb2:      rgba(120,0,180,0.1);
+  --stat-bg:   rgba(232,50,74,0.08);
+  --input-bg:  rgba(0,0,0,0.4);
+  --shadow:    0 20px 60px rgba(0,0,0,0.6);
+  --green:     #22c55e;
+  --green-soft:rgba(34,197,94,0.12);
+}
+
+[data-theme="light"] {
+  --bg:        #fff5f6;
+  --bg2:       #ffeef0;
+  --surface:   rgba(255,245,246,0.85);
+  --border:    rgba(180,30,50,0.13);
+  --border2:   rgba(180,30,50,0.26);
+  --text:      #1a0010;
+  --text2:     #7a3040;
+  --text3:     #c0a0a8;
+  --red:       #c0202e;
+  --red2:      #8c101c;
+  --red-soft:  rgba(192,32,46,0.08);
+  --red-glow:  rgba(192,32,46,0.16);
+  --nav-bg:    rgba(255,248,248,0.92);
+  --card-bg:   rgba(255,250,250,0.82);
+  --card-bg2:  rgba(255,248,248,0.92);
+  --grid:      rgba(180,30,50,0.04);
+  --orb1:      rgba(220,50,80,0.1);
+  --orb2:      rgba(160,0,100,0.06);
+  --stat-bg:   rgba(192,32,46,0.06);
+  --input-bg:  rgba(255,240,242,0.9);
+  --shadow:    0 20px 60px rgba(180,30,30,0.12);
+  --green:     #16a34a;
+  --green-soft:rgba(22,163,74,0.08);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background var(--t),color var(--t);
+}
+
+/* ═══════════════════════════════════════════════════
+   AMBIENT
+═══════════════════════════════════════════════════ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:orbDrift 15s ease-in-out infinite;}
+.o1{width:600px;height:600px;top:-200px;left:-150px;background:radial-gradient(circle,var(--orb1),transparent 70%);}
+.o2{width:450px;height:450px;bottom:-100px;right:-100px;background:radial-gradient(circle,var(--orb2),transparent 70%);animation-delay:-7s;}
+@keyframes orbDrift{
+  0%,100%{transform:translate(0,0);}
+  50%{transform:translate(30px,20px);}
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════════════ */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:68px;
+  background:var(--nav-bg);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5%;
+  transition:background var(--t),border-color var(--t);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:3px;
+  color:var(--red);text-decoration:none;
+}
+.logo-icon{
+  width:38px;height:38px;
+  background:var(--red-soft);border:1px solid var(--border2);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--red);
+}
+.nav-right{display:flex;align-items:center;gap:6px;}
+.nav-link{
+  color:var(--text2);text-decoration:none;font-size:.85rem;font-weight:600;
+  padding:8px 14px;border-radius:8px;letter-spacing:.04em;
+  transition:all .25s;
+}
+.nav-link:hover{color:var(--text);background:var(--red-soft);}
+.nav-link.active{color:var(--red);background:var(--red-soft);}
+.nav-logout{
+  color:var(--text2) !important;border:1px solid var(--border2);
+}
+.nav-logout:hover{color:var(--red) !important;border-color:var(--red);}
+
+/* Avatar chip */
+.nav-avatar{
+  width:36px;height:36px;border-radius:50%;
+  border:2px solid var(--red);
+  object-fit:cover;cursor:pointer;
+  box-shadow:0 0 12px var(--red-glow);
+  margin-left:4px;
+}
+
+/* Theme toggle */
+.theme-btn{
+  width:48px;height:27px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:27px;cursor:pointer;position:relative;
+  transition:all var(--t);flex-shrink:0;margin-left:6px;
+}
+.theme-btn::after{
+  content:'';position:absolute;top:4px;left:4px;
+  width:17px;height:17px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 8px var(--red);
+  transition:transform var(--t);
+}
+[data-theme="light"] .theme-btn::after{transform:translateX(21px);}
+.ti{position:absolute;top:50%;transform:translateY(-50%);font-size:.55rem;color:var(--text2);pointer-events:none;}
+.ti-moon{left:7px;}.ti-sun{right:6px;}
+
+/* ═══════════════════════════════════════════════════
+   MAIN WRAP
+═══════════════════════════════════════════════════ */
+.main{
+  position:relative;z-index:1;
+  padding-top:68px;
+  max-width:1280px;
+  margin:0 auto;
+  padding-left:5%;padding-right:5%;
+  padding-bottom:60px;
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO BANNER
+═══════════════════════════════════════════════════ */
+.hero-banner{
+  position:relative;
+  border-radius:28px;
+  overflow:hidden;
+  margin:28px 0 32px;
+  min-height:280px;
+  border:1px solid var(--border2);
+  box-shadow:var(--shadow);
+  display:flex;align-items:flex-end;
+}
+.hero-photo{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:center 30%;
+  transition:transform 8s ease;
+}
+.hero-banner:hover .hero-photo{transform:scale(1.03);}
+.hero-ov{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(5,0,8,0.88) 0%,rgba(5,0,8,0.5) 55%,rgba(5,0,8,0.1) 100%);
+}
+[data-theme="light"] .hero-ov{
+  background:linear-gradient(90deg,rgba(5,0,8,0.82) 0%,rgba(5,0,8,0.45) 55%,rgba(5,0,8,0.05) 100%);
+}
+.hero-content{
+  position:relative;z-index:2;
+  padding:40px 44px;
+  flex:1;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--red-soft);border:1px solid var(--border2);
+  border-radius:50px;padding:5px 14px;
+  font-size:.7rem;font-weight:700;letter-spacing:.1em;
+  color:var(--red);text-transform:uppercase;margin-bottom:14px;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse2 1.5s ease infinite;}
+@keyframes pulse2{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.5);}}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.8rem,5vw,4.8rem);
+  line-height:.95;letter-spacing:2px;
+  color:#fff;margin-bottom:12px;
+}
+.hero-title span{color:var(--red);}
+.hero-desc{font-size:.95rem;color:rgba(255,255,255,0.65);max-width:500px;line-height:1.7;}
+
+/* AI alert badge (right side of hero) */
+.hero-alert{
+  position:relative;z-index:2;
+  margin:28px 28px 28px auto;
+  background:rgba(0,0,0,0.75);
+  border:1px solid var(--red);
+  border-radius:18px;padding:20px 22px;
+  min-width:280px;max-width:300px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 8px 30px rgba(232,50,74,0.15);
+  flex-shrink:0;
+  align-self:flex-end;
+}
+.alert-tag{
+  display:flex;align-items:center;gap:7px;
+  font-size:.68rem;font-weight:800;letter-spacing:.12em;
+  color:var(--red);text-transform:uppercase;margin-bottom:10px;
+}
+.alert-tag i{font-size:.5rem;animation:blink 1.5s infinite;}
+@keyframes blink{50%{opacity:0;}}
+.alert-title{font-size:.92rem;font-weight:700;color:#fff;margin-bottom:6px;}
+.alert-desc{font-size:.78rem;color:rgba(255,255,255,0.55);line-height:1.5;}
+
+/* ═══════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════ */
+.tab-wrap{
+  display:flex;gap:8px;
+  margin-bottom:28px;
+  overflow-x:auto;
+  padding-bottom:6px;
+  scrollbar-width:none;
+}
+.tab-wrap::-webkit-scrollbar{display:none;}
+.tab-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;
+  border-radius:50px;
+  background:var(--card-bg);
+  color:var(--text2);
+  border:1px solid var(--border);
+  cursor:pointer;font-weight:600;font-size:.82rem;
+  white-space:nowrap;
+  font-family:'DM Sans',sans-serif;
+  transition:all .25s;
+  letter-spacing:.03em;
+}
+.tab-btn:hover{border-color:var(--border2);color:var(--text);}
+.tab-btn.active{
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 20px var(--red-glow);
+}
+.tab-content{display:none;}
+.tab-content.active{display:block;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════════ */
+.card{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:30px;
+  margin-bottom:22px;
+  backdrop-filter:blur(16px);
+  transition:border-color .3s;
+}
+.card:hover{border-color:var(--border2);}
+
+.section-title{
+  display:flex;align-items:center;gap:12px;
+  font-family:'DM Serif Display',serif;
+  font-size:1.35rem;color:var(--text);
+  margin-bottom:24px;
+}
+.section-title i{color:var(--red);font-size:1rem;}
+
+/* ═══════════════════════════════════════════════════
+   STAT GRID (OVERVIEW)
+═══════════════════════════════════════════════════ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+
+.stat-card{
+  background:var(--card-bg2);
+  border:1px solid var(--border);
+  border-radius:20px;padding:28px 24px;
+  position:relative;overflow:hidden;
+  transition:all .3s;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--red2),var(--red));
+  opacity:0;transition:.3s;
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.3);}
+.stat-card:hover::before{opacity:1;}
+
+.stat-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--red-soft);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:var(--red);margin-bottom:18px;
+}
+.stat-val{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:3rem;color:var(--red);
+  line-height:1;letter-spacing:2px;
+  text-shadow:0 0 30px var(--red-glow);
+}
+.stat-lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-top:8px;}
+
+/* ═══════════════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════════════ */
+.form-group{margin-bottom:18px;}
+.form-group label{
+  display:block;font-size:.72rem;font-weight:700;
+  color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;
+}
+.form-control{
+  width:100%;
+  background:var(--input-bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:13px 16px;
+  color:var(--text);font-size:.9rem;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition:all .25s;
+ -webkit-appearance:none;
+appearance:none;
+}
+.form-control::placeholder{color:var(--text3);}
+.form-control:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft);}
+select.form-control option{background:var(--bg);color:var(--text);}
+
+.form-row-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;}
+
+.submit-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;height:52px;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:#fff;border:none;border-radius:13px;
+  font-size:.88rem;font-weight:800;letter-spacing:.08em;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  text-transform:uppercase;
+  position:relative;overflow:hidden;
+  transition:all .3s;
+}
+.submit-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  transform:translateX(-100%);transition:.6s;
+}
+.submit-btn:hover::before{transform:translateX(100%);}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--red-glow);}
+
+/* ═══════════════════════════════════════════════════
+   MAP
+═══════════════════════════════════════════════════ */
+#donorMap{height:440px;border-radius:16px;overflow:hidden;border:1px solid var(--border);}
+.map-search-row{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.map-search-row .form-control{flex:1;min-width:220px;}
+.map-search-row .submit-btn{width:auto;padding:0 28px;flex-shrink:0;}
+.map-legend{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+/* ═══════════════════════════════════════════════════
+   STOCK CARDS
+═══════════════════════════════════════════════════ */
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;}
+.stock-card{
+  background:var(--card-bg2);
+  border:1px solid var(--border);
+  border-left:4px solid var(--red);
+  border-radius:16px;padding:22px 18px;
+  transition:all .3s;
+}
+.stock-card:hover{border-color:var(--red);transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,0.2);}
+.stock-type{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--red);letter-spacing:2px;}
+.stock-units{font-size:.88rem;color:var(--text2);margin-top:6px;font-weight:600;}
+.badge-low{color:#f59e0b;font-size:.72rem;font-weight:800;letter-spacing:.06em;}
+.badge-critical{color:var(--red);font-size:.72rem;font-weight:800;letter-spacing:.06em;}
+.badge-ok{color:var(--green);font-size:.72rem;font-weight:800;letter-spacing:.06em;}
+
+/* ═══════════════════════════════════════════════════
+   LEADERBOARD TABLE
+═══════════════════════════════════════════════════ */
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th{
+  text-align:left;padding:14px 16px;
+  font-size:.7rem;font-weight:800;letter-spacing:.1em;color:var(--text3);
+  text-transform:uppercase;border-bottom:1px solid var(--border);
+}
+.lb-table td{
+  padding:14px 16px;font-size:.88rem;color:var(--text);
+  border-bottom:1px solid var(--border);transition:background .2s;
+}
+.lb-table tr:hover td{background:var(--red-soft);}
+.lb-table tr:last-child td{border-bottom:none;}
+.rank-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:8px;
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;font-weight:900;
+}
+.rank-1{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000;}
+.rank-2{background:linear-gradient(135deg,#9ca3af,#d1d5db);color:#000;}
+.rank-3{background:linear-gradient(135deg,#cd7c3f,#d97706);color:#000;}
+.rank-other{background:var(--stat-bg);color:var(--text2);}
+
+/* ═══════════════════════════════════════════════════
+   HISTORY TABLE
+═══════════════════════════════════════════════════ */
+.hist-table{width:100%;border-collapse:collapse;}
+.hist-table th{
+  text-align:left;padding:14px 16px;
+  font-size:.7rem;font-weight:800;letter-spacing:.1em;
+  color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);
+}
+.hist-table td{padding:14px 16px;font-size:.87rem;color:var(--text);border-bottom:1px solid var(--border);}
+.hist-table tr:last-child td{border-bottom:none;}
+.hist-table tr:hover td{background:var(--red-soft);}
+.status-done{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--green-soft);color:var(--green);
+  border-radius:50px;padding:3px 12px;font-size:.72rem;font-weight:800;
+}
+
+/* ═══════════════════════════════════════════════════
+   CERTIFICATE
+═══════════════════════════════════════════════════ */
+.cert-wrap{text-align:center;}
+.cert-desc{font-size:.92rem;color:var(--text2);max-width:560px;margin:0 auto 28px;line-height:1.7;}
+
+#certificate{
+  background:linear-gradient(135deg,#1a0000 0%,#3b0000 100%);
+  border:2px solid #e8324a;
+  border-radius:20px;padding:56px 40px;
+  max-width:800px;margin:0 auto 24px;
+  color:white;
+  box-shadow:0 0 60px rgba(232,50,74,0.2);
+  position:relative;overflow:hidden;
+}
+#certificate::before{
+  content:'VITALDROP';
+  position:absolute;font-family:'Bebas Neue',sans-serif;
+  font-size:14rem;color:rgba(232,50,74,0.04);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  white-space:nowrap;pointer-events:none;letter-spacing:4px;
+  line-height:1;
+}
+.cert-logo{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--red);letter-spacing:4px;margin-bottom:6px;}
+.cert-sub{font-size:1.5rem;font-weight:700;margin-bottom:28px;color:rgba(255,255,255,.85);}
+.cert-presented{font-size:.9rem;color:rgba(255,255,255,.55);margin-bottom:12px;}
+.cert-name{font-family:'DM Serif Display',serif;font-size:3rem;color:#fff;font-weight:900;margin-bottom:24px;}
+.cert-body{max-width:560px;margin:0 auto;line-height:1.8;color:rgba(255,255,255,.6);font-size:.92rem;}
+.cert-footer{display:flex;justify-content:space-between;margin-top:56px;padding:0 40px;flex-wrap:wrap;gap:20px;}
+.cert-sig{text-align:center;min-width:160px;}
+.cert-sig-line{border-top:1px solid rgba(255,255,255,.3);padding-top:10px;font-size:.82rem;color:rgba(255,255,255,.5);}
+.cert-date{margin-top:36px;font-size:.82rem;color:rgba(255,255,255,.4);}
+
+.download-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 32px;
+  background:linear-gradient(135deg,var(--red2),var(--red));
+  color:#fff;border:none;border-radius:12px;
+  font-size:.88rem;font-weight:700;letter-spacing:.06em;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .3s;text-transform:uppercase;
+}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--red-glow);}
+
+/* ═══════════════════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════════════════ */
+.profile-grid{display:grid;grid-template-columns:260px 1fr;gap:36px;}
+@media(max-width:900px){.profile-grid{grid-template-columns:1fr;}}
+
+.profile-avatar-box{text-align:center;}
+.avatar-wrap{position:relative;width:140px;height:140px;margin:0 auto 20px;}
+.avatar-img{
+  width:140px;height:140px;border-radius:50%;
+  object-fit:cover;border:3px solid var(--red);
+  box-shadow:0 0 30px var(--red-glow);
+}
+.avatar-upload-btn{
+  position:absolute;bottom:4px;right:4px;
+  width:36px;height:36px;border-radius:50%;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:3px solid var(--bg);font-size:.85rem;
+  transition:all .2s;
+}
+.avatar-upload-btn:hover{background:var(--red2);transform:scale(1.1);}
+.profile-name{font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+.profile-blood{color:var(--red);font-weight:700;font-size:.9rem;}
+
+.donor-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red-soft);border:1px solid var(--border2);
+  border-radius:50px;padding:6px 16px;
+  font-size:.72rem;font-weight:800;letter-spacing:.08em;
+  color:var(--red);text-transform:uppercase;margin-top:12px;
+}
+
+/* Role toggles */
+.role-toggles{display:flex;gap:12px;margin-bottom:24px;}
+.role-toggle{
+  flex:1;background:var(--input-bg);
+  border:2px solid var(--border);border-radius:14px;
+  padding:16px;text-align:center;cursor:pointer;transition:all .25s;
+  font-size:.82rem;font-weight:700;color:var(--text2);
+}
+.role-toggle i{display:block;font-size:1.3rem;margin-bottom:8px;color:var(--text3);}
+.role-toggle.selected{border-color:var(--red);background:var(--red-soft);color:var(--red);}
+.role-toggle.selected i{color:var(--red);}
+
+/* ═══════════════════════════════════════════════════
+   PHOTO SECTION STRIP
+═══════════════════════════════════════════════════ */
+.photo-strip{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;
+  margin-bottom:24px;
+}
+.photo-strip-item{
+  border-radius:18px;overflow:hidden;
+  position:relative;aspect-ratio:16/9;
+  border:1px solid var(--border);
+}
+.photo-strip-item img{width:100%;height:100%;object-fit:cover;transition:transform 6s ease;}
+.photo-strip-item:hover img{transform:scale(1.06);}
+.photo-strip-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.7),transparent);
+  display:flex;align-items:flex-end;padding:14px;
+}
+.photo-strip-label{font-size:.75rem;font-weight:700;color:#fff;letter-spacing:.06em;text-transform:uppercase;}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .hero-alert{display:none;}
+  .hero-content{padding:28px;}
+  .photo-strip{grid-template-columns:1fr;}
+}
+@media(max-width:700px){
+  .navbar{padding:0 16px;}
+  .main{padding-left:16px;padding-right:16px;}
+  .hero-title{font-size:2.4rem;}
+  .photo-strip{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:500px){
+  .photo-strip{grid-template-columns:1fr;}
+  .tab-btn{font-size:.75rem;padding:8px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT -->
+<div class="ambient">
+  <div class="bg-grid"></div>
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon"><i class="fa-solid fa-droplet"></i></div>
+    VitalDrop
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="registery.html" class="nav-link">D&R</a>
+    <a href="guide.html" class="nav-link">Guide</a>
+    <a href="emergency.html" class="nav-link">Emergency</a>
+    <a href="thankyou.html" class="nav-link nav-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    <img src="https://i.pravatar.cc/100?u=vitaldrop" class="nav-avatar" id="navAvatar" alt="Profile"/>
+    <div class="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+      <i class="fa-solid fa-moon ti ti-moon"></i>
+      <i class="fa-solid fa-sun ti ti-sun"></i>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HERO BANNER -->
+  <div class="hero-banner">
+    <img
+      src="https://images.unsplash.com/photo-1579154204601-01588f351e67?w=1600&q=90&auto=format&fit=crop"
+      alt="Blood donation"
+      class="hero-photo"
+    />
+    <div class="hero-ov"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="live-dot"></span> Live Dashboard
+      </div>
+      <h1 class="hero-title" id="welcomeText">Welcome, <span>Hero</span></h1>
+      <p class="hero-desc">Somewhere in Bangladesh, someone is waiting for a donor like you. Your decision today becomes their second chance at life.</p>
+    </div>
+    <div class="hero-alert">
+      <div class="alert-tag"><i class="fa-solid fa-circle"></i> VitalAI Active</div>
+      <div class="alert-title">🚨 Urgent: O− at DMCH</div>
+      <div class="alert-desc">AI matched 3 donors within 5 km. Request broadcast sent — awaiting confirmation.</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-wrap">
+    <button class="tab-btn active" data-tab="overview"><i class="fa-solid fa-gauge"></i> Overview</button>
+    <button class="tab-btn" data-tab="request"><i class="fa-solid fa-ambulance"></i> Request Blood</button>
+    <button class="tab-btn" data-tab="find"><i class="fa-solid fa-map-location-dot"></i> Find Donors</button>
+    <button class="tab-btn" data-tab="stock"><i class="fa-solid fa-flask"></i> Blood Stock</button>
+    <button class="tab-btn" data-tab="leaderboard"><i class="fa-solid fa-trophy"></i> Leaderboard</button>
+    <button class="tab-btn" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i> History</button>
+    <button class="tab-btn" data-tab="certificates"><i class="fa-solid fa-award"></i> Certificates</button>
+    <button class="tab-btn" data-tab="profile"><i class="fa-solid fa-user-gear"></i> My Profile</button>
+  </div>
+
+  <!-- ══ OVERVIEW ══ -->
+  <div id="overview" class="tab-content active">
+
+    <!-- Photo strip -->
+    <div class="photo-strip">
+      <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=800&q=85&auto=format&fit=crop" alt="Donation"/>
+        <div class="photo-strip-overlay"><span class="photo-strip-label">Active Donation Centers</span></div>
+      </div>
+      <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=85&auto=format&fit=crop" alt="Lab"/>
+        <div class="photo-strip-overlay"><span class="photo-strip-label">Blood Type Screening</span></div>
+      </div>
+      <div class="photo-strip-item">
+        <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&q=85&auto=format&fit=crop" alt="Hospital"/>
+        <div class="photo-strip-overlay"><span class="photo-strip-label">64-District Network</span></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-val" data-target="18420">0</div>
+        <div class="stat-lbl">Registered Donors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="stat-val" data-target="52170">0</div>
+        <div class="stat-lbl">Total Lives Saved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+        <div class="stat-val">24/7</div>
+        <div class="stat-lbl">AI Support Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-map-pin"></i></div>
+        <div class="stat-val" data-target="64">0</div>
+        <div class="stat-lbl">Districts Covered</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REQUEST BLOOD ══ -->
+  <div id="request" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-ambulance"></i> Emergency Blood Request</div>
+      <form id="emergencyForm">
+        <input type="hidden" id="userNID" value=""/>
+        <div class="form-row-grid">
+          <div class="form-group">
+            <label>NID Number</label>
+            <input type="text" id="nid" class="form-control" placeholder="Enter your NID" required/>
+          </div>
+          <div class="form-group">
+            <label>Patient Name</label>
+            <input type="text" id="patientName" class="form-control" placeholder="Full name of patient" required/>
+          </div>
+          <div class="form-group">
+            <label>Blood Group Required</label>
+            <select id="bloodGroup" class="form-control" required>
+              <option value="">Select Blood Group</option>
+              <option>O−</option><option>O+</option>
+              <option>A−</option><option>A+</option>
+              <option>B−</option><option>B+</option>
+              <option>AB−</option><option>AB+</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="contact" class="form-control" placeholder="017XXXXXXXX" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Hospital & Location</label>
+          <input type="text" id="hospital" class="form-control" placeholder="e.g. Dhaka Medical College Hospital" required/>
+        </div>
+        <div class="form-group">
+          <label>Urgency Level</label>
+          <select id="urgency" class="form-control" required>
+            <option value="critical">🔴 Critical — Within 1–2 hours</option>
+            <option value="urgent">🟡 Urgent — Within 6 hours</option>
+            <option value="needed">🟢 Needed Soon</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Additional Notes (Optional)</label>
+          <textarea id="notes" rows="3" class="form-control" placeholder="Patient condition, units needed, etc…"></textarea>
+        </div>
+        <button type="submit" class="submit-btn">
+          <i class="fa-solid fa-broadcast-tower"></i> Broadcast Emergency Request
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ FIND DONORS ══ -->
+  <div id="find" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-map-location-dot"></i> Live Donor Intelligence Map</div>
+      <div class="map-search-row">
+        <input type="text" id="searchCity" class="form-control" placeholder="Search by city, area, or blood group…"/>
+        <button class="submit-btn" id="searchBtn" style="width:auto;padding:0 28px;">
+          <i class="fa-solid fa-magnifying-glass"></i> Locate
+        </button>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff3333;"></div> O− Emergency</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> O+ Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#facc15;"></div> AB+ Nearby</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa;"></div> Other Types</div>
+      </div>
+      <div id="donorMap"></div>
+    </div>
+  </div>
+
+  <!-- ══ BLOOD STOCK ══ -->
+  <div id="stock" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-flask"></i> Live Blood Stock Inventory</div>
+      <div class="stock-grid">
+        <div class="stock-card"><div class="stock-type">A+</div><div class="stock-units">12 Units <span class="badge-ok">GOOD</span></div></div>
+        <div class="stock-card"><div class="stock-type">A−</div><div class="stock-units">5 Units <span class="badge-low">LOW</span></div></div>
+        <div class="stock-card"><div class="stock-type">B+</div><div class="stock-units">9 Units <span class="badge-ok">GOOD</span></div></div>
+        <div class="stock-card"><div class="stock-type">B−</div><div class="stock-units">3 Units <span class="badge-low">LOW</span></div></div>
+        <div class="stock-card"><div class="stock-type">AB+</div><div class="stock-units">6 Units <span class="badge-ok">GOOD</span></div></div>
+        <div class="stock-card"><div class="stock-type">AB−</div><div class="stock-units">1 Unit <span class="badge-critical">CRITICAL</span></div></div>
+        <div class="stock-card"><div class="stock-type">O+</div><div class="stock-units">18 Units <span class="badge-ok">GOOD</span></div></div>
+        <div class="stock-card"><div class="stock-type">O−</div><div class="stock-units">2 Units <span class="badge-low">LOW</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LEADERBOARD ══ -->
+  <div id="leaderboard" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-trophy"></i> Monthly Heroes</div>
+      <table class="lb-table">
+        <thead>
+          <tr><th>Rank</th><th>Name</th><th>Donations</th><th>Badge</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="rank-badge rank-1">1</span></td><td>Md. Mejbaul Islam Zidan</td><td>12 times</td><td>🏆 Legend</td></tr>
+          <tr><td><span class="rank-badge rank-2">2</span></td><td>Hemel Pervez</td><td>7 times</td><td>🥈 Champion</td></tr>
+          <tr><td><span class="rank-badge rank-3">3</span></td><td>Shariar Nasim Shawon</td><td>4 times</td><td>🥉 Hero</td></tr>
+          <tr><td><span class="rank-badge rank-3">4</span></td><td>Faiyaz Shawon</td><td>4 times</td><td>🥉 Hero</td></tr>
+          <tr><td><span class="rank-badge rank-other">5</span></td><td>Rahat Hossain</td><td>3 times</td><td>⭐ Donor</td></tr>
+          <tr><td><span class="rank-badge rank-other">6</span></td><td>Tanvir Ahmed</td><td>3 times</td><td>⭐ Donor</td></tr>
+          <tr><td><span class="rank-badge rank-other">7</span></td><td>Nafis Rahman</td><td>2 times</td><td>⭐ Donor</td></tr>
+          <tr><td><span class="rank-badge rank-other">8</span></td><td>Siam Mahmud</td><td>2 times</td><td>⭐ Donor</td></tr>
+          <tr><td><span class="rank-badge rank-other">9</span></td><td>Arif Hasan</td><td>2 times</td><td>⭐ Donor</td></tr>
+          <tr><td><span class="rank-badge rank-other">10</span></td><td>Rakibul Islam</td><td>1 time</td><td>🩸 Member</td></tr>
+          <tr><td><span class="rank-badge rank-other">11</span></td><td>Mahin Chowdhury</td><td>1 time</td><td>🩸 Member</td></tr>
+          <tr><td><span class="rank-badge rank-other">12</span></td><td>Sabbir Hossain</td><td>1 time</td><td>🩸 Member</td></tr>
+          <tr><td><span class="rank-badge rank-other">13</span></td><td>Imran Kabir</td><td>1 time</td><td>🩸 Member</td></tr>
+          <tr><td><span class="rank-badge rank-other">14</span></td><td>Adnan Karim</td><td>1 time</td><td>🩸 Member</td></tr>
+          <tr><td><span class="rank-badge rank-other">15</span></td><td>Nayeem Hasan</td><td>1 time</td><td>🩸 Member</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div id="history" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Donation Logs</div>
+      <table class="hist-table">
+        <thead>
+          <tr><th>Date</th><th>Recipient</th><th>Blood Group</th><th>Location</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>12 May 2026</td><td>Rahim Uddin</td><td>A+</td><td>Dhaka Medical</td><td><span class="status-done"><i class="fa-solid fa-circle-check"></i> Completed</span></td></tr>
+          <tr><td>28 Apr 2026</td><td>Nusrat Jahan</td><td>O−</td><td>Square Hospital</td><td><span class="status-done"><i class="fa-solid fa-circle-check"></i> Completed</span></td></tr>
+          <tr><td>11 Mar 2026</td><td>Sabbir Ahmed</td><td>B+</td><td>CMH Dhaka</td><td><span class="status-done"><i class="fa-solid fa-circle-check"></i> Completed</span></td></tr>
+          <tr><td>02 Feb 2026</td><td>Ayesha Rahman</td><td>AB+</td><td>Popular Hospital</td><td><span class="status-done"><i class="fa-solid fa-circle-check"></i> Completed</span></td></tr>
+          <tr><td>18 Jan 2026</td><td>Mahmud Hasan</td><td>O+</td><td>United Hospital</td><td><span class="status-done"><i class="fa-solid fa-circle-check"></i> Completed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ CERTIFICATES ══ -->
+  <div id="certificates" class="tab-content">
+    <div class="card cert-wrap">
+      <div class="section-title" style="justify-content:center;"><i class="fa-solid fa-award"></i> Recognition Certificate</div>
+      <p class="cert-desc">Thank you for being a lifesaver. Your generosity brings hope to families across Bangladesh.</p>
+
+      <div id="certificate">
+        <div class="cert-logo">🩸 VitalDrop</div>
+        <div class="cert-sub">Certificate of Appreciation</div>
+        <div class="cert-presented">This certificate is proudly presented to</div>
+        <div class="cert-name" id="certificateName">Rahim Khan</div>
+        <div class="cert-body">In recognition of your kindness, humanity, and commitment to saving lives through blood donation. Your generosity brings hope to families and strength to communities across Bangladesh.</div>
+        <div class="cert-footer">
+          <div class="cert-sig"><div class="cert-sig-line">VitalDrop Authority</div></div>
+          <div class="cert-sig"><div class="cert-sig-line">Verified Donor</div></div>
+        </div>
+        <div class="cert-date">Issued on: <span id="issueDate"></span></div>
+      </div>
+
+      <button class="download-btn" onclick="downloadCertificate()">
+        <i class="fa-solid fa-download"></i> Download Certificate PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE ══ -->
+  <div id="profile" class="tab-content">
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-user-gear"></i> My Blood Profile</div>
+      <div class="profile-grid">
+
+        <!-- Left -->
+        <div class="profile-avatar-box">
+          <div class="avatar-wrap">
+            <img id="profileImage" src="https://i.pravatar.cc/300?u=mejbaul" class="avatar-img" alt="Profile"/>
+            <label for="avatarUpload" class="avatar-upload-btn"><i class="fa-solid fa-camera"></i></label>
+            <input type="file" id="avatarUpload" style="display:none;" accept="image/*"/>
+          </div>
+          <div class="profile-name" id="displayName">Md. Mejbaul Islam Zidan</div>
+          <div class="profile-blood" id="displayBlood">O+ · Donor & Receiver</div>
+          <div class="donor-badge"><i class="fa-solid fa-shield-halved"></i> Verified Donor</div>
+        </div>
+
+        <!-- Right -->
+        <div>
+          <form id="profileForm">
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" class="form-control" value="Md. Mejbaul Islam Zidan" required/>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" class="form-control" value="mejbaul@example.com" required/>
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" class="form-control" value="017XXXXXXXXXX" required/>
+              </div>
+              <div class="form-group">
+                <label>Blood Group</label>
+                <select id="profileBloodGroup" class="form-control" required>
+                  <option value="O+" selected>O+</option>
+                  <option value="O-">O−</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A−</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B−</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB−</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="dob" class="form-control" value="1998-05-15"/>
+              </div>
+              <div class="form-group">
+                <label>Last Donation</label>
+                <input type="date" id="lastDonation" class="form-control" value="2025-12-15"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <textarea id="address" rows="2" class="form-control">Mirpur-12, Dhaka, Bangladesh</textarea>
+            </div>
+
+            <div class="form-group">
+              <label style="margin-bottom:12px;display:block;">I am a:</label>
+              <div class="role-toggles">
+                <div class="role-toggle selected" id="toggleDonor" onclick="toggleRole('donor')">
+                  <i class="fa-solid fa-hand-holding-droplet"></i>Blood Donor
+                </div>
+                <div class="role-toggle" id="toggleReceiver" onclick="toggleRole('receiver')">
+                  <i class="fa-solid fa-heart-pulse"></i>Blood Receiver
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+              <i class="fa-solid fa-floppy-disk"></i> Save to Database
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+/* ══ THEME ══ */
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('vd-theme',next);
+}
+(function(){
+  const saved=localStorage.getItem('vd-theme');
+  if(saved) document.documentElement.setAttribute('data-theme',saved);
+})();
+
+/* ══ USER ══ */
+const user=JSON.parse(localStorage.getItem('vd-user')||localStorage.getItem('user')||'null');
+if(user){
+  const name=user.name||user.full_name||'Hero';
+  document.getElementById('welcomeText').innerHTML=`Welcome, <span>${name}</span>`;
+  document.getElementById('displayName').textContent=name;
+  const certNameEl=document.getElementById('certificateName');
+  if(certNameEl) certNameEl.textContent=name;
+  if(user.nid) document.getElementById('userNID').value=user.nid;
+}
+document.getElementById('issueDate').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+/* ══ TABS ══ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    const sec=document.getElementById(btn.dataset.tab);
+    if(sec) sec.classList.add('active');
+    if(btn.dataset.tab==='find'&&window.donorMap){
+      setTimeout(()=>window.donorMap.invalidateSize(),300);
+    }
+  });
+});
+
+/* ══ COUNTER ANIMATION ══ */
+function animateCounters(){
+  document.querySelectorAll('.stat-val[data-target]').forEach(el=>{
+    const target=+el.getAttribute('data-target');
+    const duration=1600;const start=performance.now();
+    function update(now){
+      const p=Math.min((now-start)/duration,1);
+      const e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(e*target).toLocaleString();
+      if(p<1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  });
+}
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){animateCounters();obs.disconnect();}});
+},{threshold:.3});
+const sg=document.querySelector('.stat-grid');
+if(sg) obs.observe(sg);
+
+/* ══ AVATAR UPLOAD ══ */
+document.getElementById('avatarUpload').addEventListener('change',function(e){
+  const file=e.target.files[0];
+  if(file){
+    const r=new FileReader();
+    r.onload=ev=>{
+      document.getElementById('profileImage').src=ev.target.result;
+      document.getElementById('navAvatar').src=ev.target.result;
+    };
+    r.readAsDataURL(file);
+  }
+});
+
+/* ══ ROLE TOGGLE ══ */
+function toggleRole(role){
+  const donor=document.getElementById('toggleDonor');
+  const recv=document.getElementById('toggleReceiver');
+  if(role==='donor') donor.classList.toggle('selected');
+  if(role==='receiver') recv.classList.toggle('selected');
+}
+
+/* ══ PROFILE FORM ══ */
+document.getElementById('profileForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const name=document.getElementById('fullName').value;
+  document.getElementById('displayName').textContent=name;
+  document.getElementById('displayBlood').textContent=document.getElementById('profileBloodGroup').value+' · Donor & Receiver';
+  const btn=this.querySelector('button');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Saved!';
+    setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false;},2000);
+  },1500);
+});
+
+/* ══ EMERGENCY FORM ══ */
+document.getElementById('emergencyForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const requestData={
+    patient_name:document.getElementById('patientName').value,
+    blood_group:document.getElementById('bloodGroup').value,
+    hospital:document.getElementById('hospital').value,
+    contact:document.getElementById('contact').value,
+    urgency:document.getElementById('urgency').value,
+    notes:document.getElementById('notes').value||'',
+    nid:document.getElementById('userNID').value,
+    created_by:user?user.name:'Guest'
+  };
+  const btn=this.querySelector('button');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Broadcasting…';btn.disabled=true;
+  try{
+    const res=await fetch('/emergency-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(requestData)});
+    const data=await res.json();
+    if(res.ok){
+      btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Request Sent!';
+      this.reset();
+      setTimeout(()=>{btn.innerHTML=orig;btn.disabled=false;},3000);
+    } else {
+      alert(data.error||'Failed to submit request');
+      btn.innerHTML=orig;btn.disabled=false;
+    }
+  } catch(err){
+    alert('Server offline — ensure Flask backend is running.');
+    btn.innerHTML=orig;btn.disabled=false;
+  }
+});
+
+/* ══ MAP ══ */
+const fallbackDonors=[
+  {name:"Hemel Pervez",blood_group:"O+",city:"Dhanmondi",lat:23.7465,lng:90.3760},
+  {name:"Hafsa Khanam",blood_group:"AB+",city:"Mirpur",lat:23.8223,lng:90.3654},
+  {name:"Sadman Sakib",blood_group:"O-",city:"Uttara",lat:23.8759,lng:90.3795},
+  {name:"Mejbaul Islam Zidan",blood_group:"O+",city:"Gulshan",lat:23.7935,lng:90.4048},
+  {name:"Rahim Khan",blood_group:"A+",city:"Mohammadpur",lat:23.7678,lng:90.3585},
+  {name:"Fatima Begum",blood_group:"B-",city:"Banani",lat:23.7945,lng:90.4002},
+  {name:"Karim Ahmed",blood_group:"O+",city:"Khilgaon",lat:23.7521,lng:90.4256},
+  {name:"Nadia Islam",blood_group:"AB+",city:"Bashundhara",lat:23.8221,lng:90.4285},
+  {name:"Tamim Iqbal",blood_group:"B+",city:"Savar",lat:23.8582,lng:90.2665},
+  {name:"Sabbir Rahman",blood_group:"O-",city:"Shyamoli",lat:23.7745,lng:90.3668},
+  {name:"Nusrat Jahan",blood_group:"A-",city:"Farmgate",lat:23.7578,lng:90.3889},
+  {name:"Arif Hossain",blood_group:"AB-",city:"Malibagh",lat:23.7469,lng:90.4152},
+  {name:"Priya Das",blood_group:"O+",city:"Jatrabari",lat:23.7105,lng:90.4351},
+  {name:"Shakib Al Hasan",blood_group:"B+",city:"Motijheel",lat:23.7305,lng:90.4170},
+  {name:"Raisa Ahmed",blood_group:"A+",city:"Tejgaon",lat:23.7689,lng:90.3998},
+  {name:"Imran Khan",blood_group:"O-",city:"Baridhara",lat:23.7982,lng:90.4185},
+  {name:"Fahim Ahmed",blood_group:"B-",city:"Rampura",lat:23.7632,lng:90.4321},
+  {name:"Sumaiya Akter",blood_group:"O+",city:"Wari",lat:23.7154,lng:90.4258},
+  {name:"Nafis Ahmed",blood_group:"O+",city:"Chittagong",lat:22.3569,lng:91.7832},
+  {name:"Sultana Begum",blood_group:"B+",city:"Sylhet",lat:24.8949,lng:91.8687},
+  {name:"Rohan Das",blood_group:"O-",city:"Rajshahi",lat:24.3745,lng:88.6042},
+  {name:"Mithila Khan",blood_group:"AB+",city:"Khulna",lat:22.8456,lng:89.5403},
+  {name:"Saifuddin Ahmed",blood_group:"O+",city:"Gazipur",lat:23.9984,lng:90.4125},
+  {name:"Moumita Roy",blood_group:"A+",city:"Narayanganj",lat:23.6238,lng:90.5000},
+  {name:"Tasmia Noor",blood_group:"O-",city:"Mymensingh",lat:24.7471,lng:90.4203}
+];
+
+let donorMap=null,donorMarkers=[];
+function initMap(){
+  if(donorMap){donorMap.remove();donorMap=null;}
+  donorMap=L.map('donorMap').setView([23.8103,90.4125],11);
+  window.donorMap=donorMap;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(donorMap);
+  setTimeout(()=>donorMap.invalidateSize(),400);
+  fetch('http://127.0.0.1:5000/get_donors')
+    .then(r=>r.json()).then(d=>loadMarkers(d))
+    .catch(()=>loadMarkers(fallbackDonors));
+}
+function loadMarkers(donors){
+  donorMarkers.forEach(m=>donorMap.removeLayer(m));donorMarkers=[];
+  donors.forEach(d=>{
+    let color='#60a5fa';
+    if(d.blood_group==='O-'||d.blood_group==='O−') color='#ff3333';
+    else if(d.blood_group==='AB+'||d.blood_group==='AB+') color='#facc15';
+    else if(d.blood_group==='O+'||d.blood_group==='O+') color='#22c55e';
+    const m=L.circleMarker([d.lat,d.lng],{radius:11,color,fillColor:color,fillOpacity:.9,weight:3}).addTo(donorMap);
+    m.bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:180px;padding:4px"><b style="color:#b01832;font-size:1rem">${d.name}</b><br/><span style="font-size:.85rem">Blood: <b>${d.blood_group}</b></span><br/><span style="font-size:.85rem">Area: ${d.city}</span><br/><span style="color:green;font-weight:700;font-size:.82rem">✓ Available</span></div>`);
+    donorMarkers.push(m);
+  });
+}
+async function searchDonors(){
+  const q=document.getElementById('searchCity').value.toLowerCase().trim();
+  let donors=fallbackDonors;
+  try{const r=await fetch('http://127.0.0.1:5000/get_donors');donors=await r.json();}catch(_){}
+  if(!q){loadMarkers(donors);donorMap.setView([23.8103,90.4125],11);return;}
+  const f=donors.filter(d=>d.city.toLowerCase().includes(q)||d.blood_group.toLowerCase().includes(q)||d.name.toLowerCase().includes(q));
+  if(!f.length){alert('No donors found in this area.');return;}
+  loadMarkers(f);donorMap.setView([f[0].lat,f[0].lng],13);
+}
+document.getElementById('searchBtn').addEventListener('click',searchDonors);
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(btn.dataset.tab==='find'&&!donorMap) initMap();
+  });
+});
+initMap();
+
+/* ══ CERTIFICATE ══ */
+async function downloadCertificate(){
+  const {jsPDF}=window.jspdf;
+  const cert=document.getElementById('certificate');
+  const canvas=await html2canvas(cert,{scale:2,backgroundColor:'#1a0000'});
+  const imgData=canvas.toDataURL('image/png');
+  const pdf=new jsPDF('landscape','mm','a4');
+  const pw=pdf.internal.pageSize.getWidth();
+  const ph=(canvas.height*pw)/canvas.width;
+  pdf.addImage(imgData,'PNG',0,0,pw,ph);
+  pdf.save('VitalDrop-Certificate.pdf');
+}
+</script>
+</body>
+</html>
